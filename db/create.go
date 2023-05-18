@@ -18,6 +18,11 @@ func createDB(file string) *gorm.DB {
 		panic(err)
 	}
 
+	// deleteTX := db.Session(&gorm.Session{AllowGlobalUpdate: true})
+	// for _, e := range datasource.DataEntities() {
+	// 	deleteTX.Delete(e)
+	// }
+
 	return db
 }
 

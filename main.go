@@ -21,6 +21,8 @@ func main() {
 
 	data := db.DB()
 
+	command = "server"
+
 	switch command {
 	case "new":
 		path := flag.Arg(2)
@@ -49,14 +51,25 @@ func main() {
 		}
 
 	case "update":
-		p := project.Project{Alias: alias}
+		log.Fatal("not implemented, please remove devex_db")
 
-		err := data.Take(&p).Error
-		if err != nil {
-			log.Fatal("db error", err)
-		}
+		// p := project.Project{Alias: alias}
 
-		log.Fatal("update not implemented yet")
+		// err := data.Take(&p).Error
+		// if err != nil {
+		// 	log.Fatal("db error", err)
+		// }
+		//
+		// err = data.Delete(p, p).Error
+		// if err != nil {
+		// 	log.Fatal("db error", err)
+		// }
+		//
+		// p.ID = 0
+		// err = data.Create(&p).Error
+		// if err != nil {
+		// 	log.Fatal("db error", err)
+		// }
 
 		// err = datacollector.Collect(context.TODO(), data, p, datasource.NewExtractors())
 		// if err != nil {
@@ -64,7 +77,7 @@ func main() {
 		// }
 
 	case "server":
-		err := dashboard.RunServer(context.TODO(), data)
+		err := dashboard.RunServer(data)
 		if err != nil {
 			log.Fatal("server", err)
 		}

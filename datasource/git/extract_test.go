@@ -13,6 +13,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/sync/errgroup"
 
 	git2 "devex_dashboard/datasource/git"
 )
@@ -76,4 +77,26 @@ func TestExtract(t *testing.T) {
 	assert.Equal(t, 10, resultCommits)
 	assert.Equal(t, 3, len(authors))
 	assert.Equal(t, 4, len(files))
+}
+
+func TestRealExtract(t *testing.T) {
+	t.Skip("for local test only")
+
+	c := make(chan git2.FileCommit)
+
+	wg, ctx := errgroup.WithContext(context.TODO())
+
+	wg.Go(func() error {
+		return git2.ExtractCommits(ctx, "/Users/nvrusin/black", c)
+	})
+
+	wg.Go(func() error {
+		for f := range c {
+			t.Log("file", f.Package, f.File)
+		}
+
+		return nil
+	})
+
+	assert.NoError(t, wg.Wait())
 }

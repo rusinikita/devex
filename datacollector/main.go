@@ -29,12 +29,13 @@ func Collect(ctx context.Context, db *gorm.DB, pkt project.Project, extractors d
 			err := db.Create(&project.File{
 				Package: file.Package,
 				Name:    file.Name,
+				Project: pkt.ID,
 				Lines:   file.Lines,
 				Symbols: file.Symbols,
 				Present: true,
 			}).Error
 			if err != nil {
-				return fmt.Errorf("file saving: %e", err)
+				return fmt.Errorf("file saving: %q", err)
 			}
 		}
 
@@ -43,7 +44,7 @@ func Collect(ctx context.Context, db *gorm.DB, pkt project.Project, extractors d
 
 	err := extractors.Files(ctx, pkt.FolderPath, fileChan)
 	if err != nil {
-		return fmt.Errorf("files collection: %e", err)
+		return fmt.Errorf("files collection: %q", err)
 	}
 
 	if extractors.Coverage != nil {
@@ -55,11 +56,12 @@ func Collect(ctx context.Context, db *gorm.DB, pkt project.Project, extractors d
 					projectFile := project.File{
 						Name:    file.File,
 						Package: pkg.Path,
+						Project: pkt.ID,
 					}
 					tx := db.FirstOrCreate(&projectFile, projectFile)
 					err := tx.Error
 					if err != nil {
-						return fmt.Errorf("finding coverage file: %e", err)
+						return fmt.Errorf("finding coverage file: %q", err)
 					}
 
 					err = db.Create(&project.Coverage{
@@ -69,7 +71,7 @@ func Collect(ctx context.Context, db *gorm.DB, pkt project.Project, extractors d
 						UncoveredLines: file.UncoveredLines,
 					}).Error
 					if err != nil {
-						return fmt.Errorf("commit saving: %e", err)
+						return fmt.Errorf("commit saving: %q", err)
 					}
 				}
 			}
@@ -81,7 +83,7 @@ func Collect(ctx context.Context, db *gorm.DB, pkt project.Project, extractors d
 
 		err := extractors.Coverage(ctx, pkt.FolderPath, c)
 		if err != nil {
-			return fmt.Errorf("coverage collection: %e", err)
+			log.Printf("skip coverage collection: %q\n", err)
 		}
 	}
 
@@ -89,14 +91,22 @@ func Collect(ctx context.Context, db *gorm.DB, pkt project.Project, extractors d
 		c := make(chan git.FileCommit)
 
 		group.Go(func() error {
+			commitsHandled := 0
+
 			for commit := range c {
+				commitsHandled++
+				if commitsHandled%1000 == 0 {
+					log.Println(commitsHandled, "commits handled")
+				}
+
 				file := project.File{
 					Name:    commit.File,
 					Package: commit.Package,
+					Project: pkt.ID,
 				}
 				err := db.FirstOrCreate(&file, file).Error
 				if err != nil {
-					return fmt.Errorf("finding commit file: %e", err)
+					return fmt.Errorf("finding commit file: %q", err)
 				}
 
 				err = db.Create(&project.GitChange{
@@ -108,7 +118,7 @@ func Collect(ctx context.Context, db *gorm.DB, pkt project.Project, extractors d
 					Time:        commit.Time,
 				}).Error
 				if err != nil {
-					return fmt.Errorf("commit saving: %e", err)
+					return fmt.Errorf("commit saving: %q", err)
 				}
 			}
 
@@ -119,7 +129,7 @@ func Collect(ctx context.Context, db *gorm.DB, pkt project.Project, extractors d
 
 		err := extractors.Git(ctx, pkt.FolderPath, c)
 		if err != nil {
-			return fmt.Errorf("git commits collection: %e", err)
+			return fmt.Errorf("git commits collection: %q", err)
 		}
 	}
 

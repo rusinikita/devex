@@ -15,15 +15,24 @@ type File struct {
 	Symbols uint32
 }
 
-func Extract(_ context.Context, path string, c chan<- File) error {
+func Extract(_ context.Context, rootPath string, c chan<- File) error {
 	defer close(c)
 
-	return filepath.WalkDir(path, func(path string, d fs.DirEntry, err error) error {
+	return filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 
 		if d.IsDir() {
+			return nil
+		}
+
+		fPackage := strings.TrimPrefix(filepath.ToSlash(filepath.Dir(path)), filepath.ToSlash(rootPath))
+		fPackage = strings.TrimPrefix(fPackage, "/")
+
+		fName := filepath.Base(path)
+
+		if strings.HasPrefix(fPackage, ".") || strings.HasPrefix(fName, ".") {
 			return nil
 		}
 
@@ -35,8 +44,8 @@ func Extract(_ context.Context, path string, c chan<- File) error {
 		content := string(data)
 
 		f := File{
-			Package: filepath.Dir(path),
-			Name:    filepath.Base(path),
+			Package: fPackage,
+			Name:    fName,
 			Lines:   uint32(len(strings.Split(content, "\n"))),
 			Symbols: uint32(len(content)),
 		}

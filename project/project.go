@@ -42,17 +42,20 @@ type Project struct {
 // }
 
 type File struct {
-	ID      ID
-	Package string
-	Name    string
-	Lines   uint32
-	Symbols uint32
-	Present bool
+	ID          ID
+	Project     ID
+	ProjectJoin Project `gorm:"foreignKey:Project;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Package     string
+	Name        string
+	Lines       uint32
+	Symbols     uint32
+	Present     bool
 }
 
 type GitChange struct {
 	ID          ID
 	File        ID
+	FileJoin    File `gorm:"foreignKey:File;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Hash        string
 	Author      string
 	RowsAdded   uint32
@@ -62,6 +65,7 @@ type GitChange struct {
 
 type Coverage struct {
 	File           ID
+	FileJoin       File `gorm:"foreignKey:File;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Percent        uint8
 	UncoveredCount uint32
 	UncoveredLines []uint32 `gorm:"serializer:json"`

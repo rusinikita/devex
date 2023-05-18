@@ -3,6 +3,7 @@ package git
 import (
 	"context"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/go-git/go-git/v5"
@@ -47,7 +48,7 @@ func ExtractCommits(ctx context.Context, projectPath string, c chan<- FileCommit
 
 		for _, file := range stats {
 			raw := FileCommit{
-				Package:     filepath.Dir(file.Name),
+				Package:     strings.TrimPrefix(filepath.Dir(file.Name), "."),
 				File:        filepath.Base(file.Name),
 				Hash:        commit.Hash.String(),
 				Author:      commit.Author.Email,

@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type Package struct {
@@ -69,6 +70,26 @@ func extractXml(file io.Reader, c chan<- Package) error {
 
 	var data xmlFile
 
+	// go test -coverprofile=covcov -covermode=atomic ./...
+	// file:start_line.start_symbol,end_line.end_symbol numberOfStatements hits
+	// считаем hits == 0 и все строки между start_line и end_line
+	/*
+		mode: atomic
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:30.153,38.2 1 0
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:40.49,53.33 5 0
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:53.33,56.13 2 0
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:56.13,59.8 2 0
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:59.8,61.19 2 0
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:61.19,62.11 1 0
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:63.11,65.6 1 0
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:70.2,72.12 2 0
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:75.125,80.16 4 5
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:80.16,83.3 2 0
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:85.2,89.100 4 5
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:89.100,96.3 4 0
+		go.avito.ru/msg/service-seller-audience/internal/actions/send_discounts/action.go:98.2,109.16 2 5
+	*/
+
 	err := xml.NewDecoder(file).Decode(&data)
 	if err != nil {
 		return err
@@ -76,7 +97,7 @@ func extractXml(file io.Reader, c chan<- Package) error {
 
 	for _, d := range data.Packages.Packages {
 		p := Package{
-			Path: d.Name,
+			Path: strings.ReplaceAll(d.Name, ".", "/"),
 		}
 
 		for _, class := range d.Classes.Classes {

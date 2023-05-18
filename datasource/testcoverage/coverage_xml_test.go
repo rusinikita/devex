@@ -46,7 +46,7 @@ func TestExtractXml(t *testing.T) {
 }
 
 func TestDebug(t *testing.T) {
-	t.Skip("only for hand testing")
+	// t.Skip("only for hand testing")
 
 	c := make(chan Package)
 
@@ -59,6 +59,10 @@ func TestDebug(t *testing.T) {
 	wg.Go(func() error {
 		for p := range c {
 			t.Log("package", p.Path, len(p.Files))
+
+			for _, c := range p.Files {
+				t.Log("cov", c.File, len(c.UncoveredLines))
+			}
 		}
 
 		return nil
