@@ -8,7 +8,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func heatmap(barNames []string, data dataList) components.Charter {
+func heatmap(barNames []string, data timeSeriesData) components.Charter {
 	Revert(barNames)
 
 	hm := charts.NewHeatMap()

@@ -38,7 +38,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 		}
 	}
 
-	barNames, data, err := data(db, params.PerFiles, dataProjects, params.Filter)
+	barNames, data, err := gitChangesData(db, params.PerFiles, dataProjects, params.Filter)
 	if err != nil {
 		return err
 	}
@@ -81,6 +81,22 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 
 func RunServer(db *gorm.DB) error {
 	engine := gin.New()
+
+	engine.Use(func(ctx *gin.Context) {
+		ctx.Next()
+
+		err := ctx.Errors.Last()
+		if err == nil {
+			return
+		}
+
+		code := http.StatusBadRequest
+		if err.IsType(gin.ErrorTypePrivate) {
+			code = http.StatusInternalServerError
+		}
+
+		ctx.JSON(code, err.JSON())
+	})
 
 	engine.GET("/", func(ctx *gin.Context) {
 		params := Params{}

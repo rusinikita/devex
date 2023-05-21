@@ -2,19 +2,14 @@ package dashboard
 
 import (
 	"fmt"
-	"path"
 
 	"gorm.io/gorm"
 
 	"devex_dashboard/project"
 )
 
-func data(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (barNames []string, result []barData, err error) {
-	var bars []struct {
-		Alias   string
-		Package string
-		Name    string
-	}
+func gitChangesData(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (barNames []string, result []timedData, err error) {
+	var bars values
 
 	// Future: months/weeks selector
 
@@ -36,7 +31,7 @@ func data(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string
 		   %[2]s
 		   and time > date('now', '-48 month')
 		group by %[1]s, date("time", 'start of month'))
-	select %[1]s, count(*), sum(line_changes), avg(line_changes)
+	select %[1]s, count(*), sum(line_changes), avg(line_changes) as value
 	from fcm group by %[1]s
 	having count(*) > 6
 	order by avg(line_changes) desc
@@ -49,9 +44,7 @@ func data(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string
 		return nil, nil, err
 	}
 
-	for _, bar := range bars {
-		barNames = append(barNames, path.Join(bar.Alias, bar.Package, bar.Name))
-	}
+	barNames = bars.barNames()
 
 	sql := `
 	select %[1]s, date("time", 'start of month') as bar_time, sum(rows_added + rows_removed) as value

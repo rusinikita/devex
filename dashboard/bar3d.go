@@ -8,7 +8,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func bar3D(barNames []string, data dataList) components.Charter {
+func bar3D(barNames []string, data timeSeriesData) components.Charter {
 	var bar3dNames []string
 	copy(bar3dNames, barNames)
 	sort.Strings(bar3dNames)
