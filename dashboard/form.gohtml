@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<article>
+    <form>
+        <div class="grid">
+            <details role="list"  data-tooltip="Unselect all to enable all" data-placement="bottom">
+                {{$projects := .SelectedProjects}}
+                <summary aria-haspopup="listbox">
+                    Projects{{if $projects}}:{{range .Projects}}{{if index $projects .ID}}{{.Alias}},{{end}}{{end}}{{end}}
+                </summary>
+                <ul role="listbox">
+                    {{range .Projects}}
+                        <li>
+                            <label>
+                                <input type="checkbox" id="project_ids" name="project_ids" value="{{.ID}}" {{if index $projects .ID}}checked{{end}}>
+                                {{.Alias}}
+                            </label>
+                        </li>
+                    {{end}}
+                </ul>
+
+            </details>
+            <label for="per_files">
+                <input type="checkbox" id="per_files" name="per_files" value="true" {{if .PerFiles}}checked{{end}}>
+                Per files counter
+            </label>
+        </div>
+        <label for="filter">SQL Filter</label>
+        <input type="text" id="filter" name="filter" {{with .Filter}}value="{{.}}"{{end}}>
+        <small>
+            SQL code passed to filter packages and files.
+            <em data-tooltip="and package like 'internal%' and package not like '%generated%' and name not like '%_test.go'">Example</em>
+        </small>
+        <button type="submit">Apply</button>
+    </form>
+</article>
