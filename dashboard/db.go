@@ -76,12 +76,35 @@ func fileSizes(db *gorm.DB, projects []project.ID, filesFilter string) (result v
 
 func contribution(db *gorm.DB, projects []project.ID, filesFilter string) (result values, err error) {
 	err = db.Model(project.GitChange{}).
-		Select("alias", "package", "author as name", "sum(rows_added+rows_removed) as value").
+		Select("alias", "package", "author", "sum(rows_added+rows_removed) as value").
 		Joins("join git_commits c on c.id = git_changes.'commit'").
 		Joins("join files f on f.id = git_changes.file").
 		Joins("join projects p on p.id = f.project").
 		Where("git_changes.time > date('now', '-12 month') and f.project in ?"+filesFilter, projects).
 		Group("alias, package, author").
+		Having("sum(rows_added+rows_removed) > 300").
+		Scan(&result).
+		Error
+
+	return result, err
+}
+
+func commitMessages(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (result values, err error) {
+	grouping := "package"
+	if filesMode {
+		grouping += ", name"
+	}
+
+	err = db.Model(project.GitChange{}).
+		Select("alias", grouping, "count(*) as value").
+		Joins("join git_commits c on c.id = git_changes.'commit'").
+		Joins("join files f on f.id = git_changes.file").
+		Joins("join projects p on p.id = f.project").
+		Where("git_changes.time > date('now', '-24 month') and f.present > 0 and (c.message like '%fix%' or c.message like '%bug%') and f.project in ?"+filesFilter, projects).
+		Group("alias, " + grouping).
+		Having("count(*) > 0").
+		Order("count(*) desc").
+		Limit(40).
 		Scan(&result).
 		Error
 

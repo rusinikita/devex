@@ -13,6 +13,7 @@ type valueData struct {
 	Alias   string
 	Package string
 	Name    string
+	Author  string
 	Value   float64
 }
 

@@ -19,11 +19,11 @@ func sandkey(data values) components.Charter {
 
 	for _, v := range data {
 		p := path.Join(v.Alias, v.Package)
-		nodeNames = append(nodeNames, v.Name, v.Alias, p)
+		nodeNames = append(nodeNames, v.Author, v.Alias, p)
 
 		links = append(links,
 			opts.SankeyLink{
-				Source: v.Name,
+				Source: v.Author,
 				Target: p,
 				Value:  float32(v.Value),
 			},
@@ -42,7 +42,7 @@ func sandkey(data values) components.Charter {
 	sk.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{
 			Width:  "100%",
-			Height: strconv.Itoa(len(nodes)*10) + "px",
+			Height: strconv.Itoa(len(nodes)*20) + "px",
 		}),
 		charts.WithTitleOpts(opts.Title{
 			Title: "Contribution in last year",

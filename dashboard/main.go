@@ -56,6 +56,13 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 
 	page.AddCharts(treeMap(sizes))
 
+	fixes, err := commitMessages(db, params.PerFiles, dataProjects, params.Filter)
+	if err != nil {
+		return err
+	}
+
+	page.AddCharts(bar(fixes))
+
 	contibs, err := contribution(db, dataProjects, params.Filter)
 	if err != nil {
 		return err
