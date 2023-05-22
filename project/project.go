@@ -51,14 +51,21 @@ type File struct {
 	Present bool
 }
 
+type GitCommit struct {
+	ID      ID
+	Hash    string
+	Author  string
+	Message string
+	Time    time.Time
+}
+
 type GitChange struct {
 	ID          ID
 	File        ID
-	Hash        string
-	Author      string
+	Commit      ID
 	RowsAdded   uint32
 	RowsRemoved uint32
-	Time        time.Time
+	Time        time.Time `gorm:"index:,sort:desc`
 }
 
 type Coverage struct {

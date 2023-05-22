@@ -13,7 +13,7 @@ type Extractor[T any] func(ctx context.Context, projectPath string, c chan<- T) 
 
 type Extractors struct {
 	Files    Extractor[files.File]
-	Git      Extractor[git.FileCommit]
+	Git      Extractor[git.Commit]
 	Coverage Extractor[testcoverage.Package]
 }
 
@@ -31,5 +31,6 @@ func DataEntities() []any {
 		project.File{},
 		project.Coverage{},
 		project.GitChange{},
+		project.GitCommit{},
 	}
 }

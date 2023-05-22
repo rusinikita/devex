@@ -21,7 +21,10 @@ func main() {
 
 	data := db.DB()
 
-	command = "server"
+	if command == "" {
+		log.Println("no command => running server")
+		command = "server"
+	}
 
 	switch command {
 	case "new":

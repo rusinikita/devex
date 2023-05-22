@@ -88,7 +88,7 @@ func Collect(ctx context.Context, db *gorm.DB, pkt project.Project, extractors d
 	}
 
 	if extractors.Git != nil {
-		c := make(chan git.FileCommit)
+		c := make(chan git.Commit)
 
 		group.Go(func() error {
 			defer close(c)
@@ -96,30 +96,42 @@ func Collect(ctx context.Context, db *gorm.DB, pkt project.Project, extractors d
 
 			for commit := range c {
 				commitsHandled++
-				if commitsHandled%1000 == 0 {
+				if commitsHandled%100 == 0 {
 					log.Println(commitsHandled, "commits handled")
 				}
 
-				file := project.File{
-					Name:    commit.File,
-					Package: commit.Package,
-					Project: pkt.ID,
+				c := project.GitCommit{
+					Hash:    commit.Hash,
+					Author:  commit.Author,
+					Message: commit.Message,
+					Time:    commit.Time,
 				}
-				err := db.FirstOrCreate(&file, file).Error
+				err := db.FirstOrCreate(&c, c).Error
 				if err != nil {
-					return fmt.Errorf("finding commit file: %q", err)
+					return fmt.Errorf("finding commit: %q", err)
 				}
 
-				err = db.Create(&project.GitChange{
-					File:        file.ID,
-					Hash:        commit.Hash,
-					Author:      commit.Author,
-					RowsAdded:   commit.RowsAdded,
-					RowsRemoved: commit.RowsRemoved,
-					Time:        commit.Time,
-				}).Error
-				if err != nil {
-					return fmt.Errorf("commit saving: %q", err)
+				for _, cFile := range commit.Files {
+					file := project.File{
+						Name:    cFile.File,
+						Package: cFile.Package,
+						Project: pkt.ID,
+					}
+					err := db.FirstOrCreate(&file, file).Error
+					if err != nil {
+						return fmt.Errorf("finding commit file: %q", err)
+					}
+
+					err = db.Create(&project.GitChange{
+						File:        file.ID,
+						Commit:      c.ID,
+						RowsAdded:   cFile.RowsAdded,
+						RowsRemoved: cFile.RowsRemoved,
+						Time:        commit.Time,
+					}).Error
+					if err != nil {
+						return fmt.Errorf("commit saving: %q", err)
+					}
 				}
 			}
 

@@ -59,10 +59,11 @@ func createTestRepository(t *testing.T, commits, authors, files int) string {
 func TestExtract(t *testing.T) {
 	path := createTestRepository(t, 10, 3, 4)
 
-	c := make(chan git2.FileCommit, 20)
+	c := make(chan git2.Commit, 20)
 	var (
 		resultCommits int
 		authors       = map[string]struct{}{}
+		commits       = map[string]struct{}{}
 		files         = map[string]struct{}{}
 	)
 
@@ -71,10 +72,14 @@ func TestExtract(t *testing.T) {
 	for commit := range c {
 		resultCommits++
 		authors[commit.Author] = struct{}{}
-		files[commit.File] = struct{}{}
+		commits[commit.Hash] = struct{}{}
+		for _, f := range commit.Files {
+			files[f.File] = struct{}{}
+		}
 	}
 
 	assert.Equal(t, 10, resultCommits)
+	assert.Equal(t, 10, len(commits))
 	assert.Equal(t, 3, len(authors))
 	assert.Equal(t, 4, len(files))
 }
@@ -82,7 +87,7 @@ func TestExtract(t *testing.T) {
 func TestRealExtract(t *testing.T) {
 	t.Skip("for local test only")
 
-	c := make(chan git2.FileCommit)
+	c := make(chan git2.Commit)
 
 	wg, ctx := errgroup.WithContext(context.TODO())
 
@@ -91,8 +96,10 @@ func TestRealExtract(t *testing.T) {
 	})
 
 	wg.Go(func() error {
-		for f := range c {
-			t.Log("file", f.Package, f.File)
+		for commit := range c {
+			for _, f := range commit.Files {
+				t.Log("file", f.Package, f.File)
+			}
 		}
 
 		return nil

@@ -42,20 +42,28 @@ func TestCollect(t *testing.T) {
 
 			return nil
 		},
-		Git: func(ctx context.Context, projectPath string, c chan<- git.FileCommit) error {
+		Git: func(ctx context.Context, projectPath string, c chan<- git.Commit) error {
 			defer close(c)
 			m.MethodCalled("Git", projectPath)
 
-			for i := 0; i < 30; i++ {
-				c <- git.FileCommit{
-					Package:     strconv.Itoa(i % 3),
-					File:        strconv.Itoa(i / 3),
-					Hash:        strconv.Itoa(i),
-					Author:      "test",
-					RowsAdded:   1,
-					RowsRemoved: 1,
-					Time:        time.Now(),
+			for i := 0; i < 3; i++ {
+				commit := git.Commit{
+					Hash:    strconv.Itoa(i),
+					Author:  "test",
+					Message: strconv.Itoa(i),
+					Time:    time.Now(),
 				}
+
+				for i := 0; i < 10; i++ {
+					commit.Files = append(commit.Files, git.FileCommit{
+						Package:     strconv.Itoa(i % 3),
+						File:        strconv.Itoa(i / 3),
+						RowsAdded:   1,
+						RowsRemoved: 1,
+					})
+				}
+
+				c <- commit
 			}
 
 			return nil
