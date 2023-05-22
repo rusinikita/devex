@@ -56,6 +56,13 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 
 	page.AddCharts(treeMap(sizes))
 
+	contibs, err := contribution(db, dataProjects, params.Filter)
+	if err != nil {
+		return err
+	}
+
+	page.AddCharts(sandkey(contibs))
+
 	page.SetLayout(components.PageNoneLayout)
 	page.AddCustomizedCSSAssets("https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css")
 

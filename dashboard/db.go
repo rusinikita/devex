@@ -73,3 +73,16 @@ func fileSizes(db *gorm.DB, projects []project.ID, filesFilter string) (result v
 
 	return result, err
 }
+
+func contribution(db *gorm.DB, projects []project.ID, filesFilter string) (result values, err error) {
+	err = db.Model(project.GitChange{}).
+		Select("alias", "package", "author as name", "sum(rows_added+rows_removed) as value").
+		Joins("join files f on f.id = git_changes.file").
+		Joins("join projects p on p.id = f.project").
+		Where("time > date('now', '-12 month') and f.project in ?"+filesFilter, projects).
+		Group("alias, package, author").
+		Scan(&result).
+		Error
+
+	return result, err
+}
