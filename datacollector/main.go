@@ -91,6 +91,7 @@ func Collect(ctx context.Context, db *gorm.DB, pkt project.Project, extractors d
 		c := make(chan git.FileCommit)
 
 		group.Go(func() error {
+			defer close(c)
 			commitsHandled := 0
 
 			for commit := range c {

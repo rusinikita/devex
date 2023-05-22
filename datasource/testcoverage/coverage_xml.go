@@ -121,6 +121,7 @@ func ExtractXml(_ context.Context, path string, c chan<- Package) error {
 
 	content, err := os.Open(file)
 	if err != nil {
+		close(c)
 		return err
 	}
 

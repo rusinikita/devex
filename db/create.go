@@ -30,6 +30,10 @@ func DB() *gorm.DB {
 	return createDB("devex_bd.db")
 }
 
-func TestDB() *gorm.DB {
+func TestDB(file ...string) *gorm.DB {
+	if len(file) > 0 {
+		return createDB(file[0])
+	}
+
 	return createDB("file::memory:?cache=shared")
 }
