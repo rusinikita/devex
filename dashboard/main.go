@@ -65,7 +65,6 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 	page := components.NewPage()
 
 	page.AddCharts(heatmap(barNames, data))
-	page.AddCharts(bar3D(barNames, data))
 
 	sizes, err := fileSizes(db, dataProjects, sqlFilter)
 	if err != nil {
