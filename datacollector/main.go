@@ -32,6 +32,8 @@ func Collect(ctx context.Context, db *gorm.DB, pkt project.Project, extractors d
 				Project: pkt.ID,
 				Lines:   file.Lines,
 				Symbols: file.Symbols,
+				Tags:    file.Tags,
+				Imports: file.Imports,
 				Present: true,
 			}).Error
 			if err != nil {

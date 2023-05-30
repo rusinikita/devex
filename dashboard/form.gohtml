@@ -2,7 +2,7 @@
 <article>
     <form>
         <div class="grid">
-            <details role="list"  data-tooltip="Unselect all to enable all" data-placement="bottom">
+            <details role="list" data-tooltip="Unselect all to enable all" data-placement="bottom">
                 {{$projects := .SelectedProjects}}
                 <summary aria-haspopup="listbox">
                     Projects{{if $projects}}:{{range .Projects}}{{if index $projects .ID}}{{.Alias}},{{end}}{{end}}{{end}}
@@ -11,7 +11,8 @@
                     {{range .Projects}}
                         <li>
                             <label>
-                                <input type="checkbox" id="project_ids" name="project_ids" value="{{.ID}}" {{if index $projects .ID}}checked{{end}}>
+                                <input type="checkbox" id="project_ids" name="project_ids" value="{{.ID}}"
+                                       {{if index $projects .ID}}checked{{end}}>
                                 {{.Alias}}
                             </label>
                         </li>
@@ -24,12 +25,54 @@
                 Per files counter
             </label>
         </div>
-        <label for="filter">SQL Filter</label>
-        <input type="text" id="filter" name="filter" {{with .Filter}}value="{{.}}"{{end}}>
-        <small>
-            SQL code passed to filter packages and files.
-            <em data-tooltip="and package like 'internal%' and package not like '%generated%' and name not like '%_test.go'">Example</em>
-        </small>
+        <div class="grid">
+            <div>
+                <label for="package_filter">Package Filter</label>
+                <input type="text" id="package_filter" name="package_filter"
+                       {{with .PackageFilter}}value="{{.}}"{{end}}>
+                <small>
+                    Package path parts for filtering. ! - for exclude
+                    <em data-tooltip="internal,!generated">Example</em>
+                </small>
+            </div>
+            <div>
+                <label for="name_filter">File name Filter</label>
+                <input type="text" id="name_filter" name="name_filter" {{with .NameFilter}}value="{{.}}"{{end}}>
+                <small>
+                    File name parts for filtering. ! - for exclude
+                    <em data-tooltip="!_test.go,!mock">Example</em>
+                </small>
+            </div>
+        </div>
+        <div class="grid">
+            <div>
+                <label for="trim_package">Trim packages path</label>
+                <input type="text" id="trim_package" name="trim_package" {{with .TrimPackage}}value="{{.}}"{{end}}>
+                <small>
+                    Prefix to cut off from folder path to get package path.
+                    <em data-tooltip="src/">Example</em>
+                </small>
+            </div>
+        </div>
+        <div class="grid">
+            <div>
+                <label for="commit_filters">Commit graphs filters</label>
+                <input type="text" id="commit_filters" name="commit_filters"
+                       {{with .CommitFilters}}value="{{.}}"{{end}}>
+                <small>
+                    Commit message comma separated keywords for commit charts. Separate with ';' for another category.
+                    <em data-tooltip="fix,bug;revert">Example</em>
+                </small>
+            </div>
+            <div>
+                <label for="file_filters">Commit graphs filters</label>
+                <input type="text" id="file_filters" name="file_filters" {{with .FileFilters}}value="{{.}}"{{end}}>
+                <small>
+                    File content comma separated keywords for file charts. Separate with ';' for another category.
+                    <em data-tooltip="nolint,todo;billing">Example</em>
+                </small>
+            </div>
+        </div>
         <button type="submit">Apply</button>
     </form>
 </article>

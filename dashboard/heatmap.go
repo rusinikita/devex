@@ -52,7 +52,7 @@ func heatmap(barNames []string, data timeSeriesData) components.Charter {
 		}),
 		charts.WithInitializationOpts(opts.Initialization{
 			Width:  "100%",
-			Height: strconv.Itoa(len(barNames)*30) + "px",
+			Height: strconv.Itoa(200+len(barNames)*30) + "px",
 		}),
 		charts.WithGridOpts(opts.Grid{
 			ContainLabel: true,

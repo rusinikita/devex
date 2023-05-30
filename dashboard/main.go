@@ -19,9 +19,25 @@ import (
 var form string
 
 type Params struct {
-	ProjectIDs []project.ID `form:"project_ids"`
-	PerFiles   bool         `form:"per_files"`
-	Filter     string       `form:"filter"`
+	ProjectIDs    []project.ID `form:"project_ids"`
+	PerFiles      bool         `form:"per_files"`
+	PackageFilter string       `form:"package_filter"`
+	NameFilter    string       `form:"name_filter"`
+	TrimPackage   string       `form:"trim_package"`
+	CommitFilters string       `form:"commit_filters"`
+	FileFilters   string       `form:"file_filters"`
+}
+
+func (p Params) sqlFilter() (sql string) {
+	if p.PackageFilter != "" {
+		sql += "and " + SQLFilter("package", p.PackageFilter)
+	}
+
+	if p.NameFilter != "" {
+		sql += " and " + SQLFilter("name", p.NameFilter)
+	}
+
+	return sql
 }
 
 func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
@@ -38,7 +54,9 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 		}
 	}
 
-	barNames, data, err := gitChangesData(db, params.PerFiles, dataProjects, params.Filter)
+	sqlFilter := params.sqlFilter()
+
+	barNames, data, err := gitChangesData(db, params.PerFiles, dataProjects, sqlFilter)
 	if err != nil {
 		return err
 	}
@@ -49,26 +67,33 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 	page.AddCharts(heatmap(barNames, data))
 	page.AddCharts(bar3D(barNames, data))
 
-	sizes, err := fileSizes(db, dataProjects, params.Filter)
+	sizes, err := fileSizes(db, dataProjects, sqlFilter)
 	if err != nil {
 		return err
 	}
 
 	page.AddCharts(treeMap(sizes))
 
-	fixes, err := commitMessages(db, params.PerFiles, dataProjects, params.Filter)
+	fixes, err := commitMessages(db, params.PerFiles, dataProjects, sqlFilter)
 	if err != nil {
 		return err
 	}
 
 	page.AddCharts(bar(fixes))
 
-	contibs, err := contribution(db, dataProjects, params.Filter)
+	contibs, err := contribution(db, dataProjects, sqlFilter)
 	if err != nil {
 		return err
 	}
 
 	page.AddCharts(sandkey(contibs))
+
+	fileImports, err := imports(db, params.PerFiles, dataProjects, sqlFilter)
+	if err != nil {
+		return err
+	}
+
+	page.AddCharts(circularGraph(fileImports))
 
 	page.SetLayout(components.PageNoneLayout)
 	page.AddCustomizedCSSAssets("https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css")
@@ -82,12 +107,20 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 		Projects         []project.Project
 		SelectedProjects Set[project.ID]
 		PerFiles         bool
-		Filter           string
+		PackageFilter    string
+		NameFilter       string
+		TrimPackage      string
+		CommitFilters    string
+		FileFilters      string
 	}{
 		Projects:         projects,
 		SelectedProjects: ToSet(params.ProjectIDs),
 		PerFiles:         params.PerFiles,
-		Filter:           params.Filter,
+		PackageFilter:    params.PackageFilter,
+		NameFilter:       params.NameFilter,
+		TrimPackage:      params.TrimPackage,
+		CommitFilters:    params.CommitFilters,
+		FileFilters:      params.FileFilters,
 	}
 
 	err = template.Must(template.New("new").Parse(form)).Execute(&tpl, formData)

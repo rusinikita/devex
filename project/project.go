@@ -48,6 +48,8 @@ type File struct {
 	Name    string
 	Lines   uint32
 	Symbols uint32
+	Tags    []string `gorm:"serializer:json"` // experiment with tags: nolint,billing,money,order
+	Imports []string `gorm:"serializer:json"`
 	Present bool
 }
 
@@ -65,7 +67,12 @@ type GitChange struct {
 	Commit      ID
 	RowsAdded   uint32
 	RowsRemoved uint32
-	Time        time.Time `gorm:"index:,sort:desc`
+	Time        time.Time `gorm:"index:,sort:desc"`
+}
+
+type Import struct {
+	File ID
+	Path string
 }
 
 type Coverage struct {

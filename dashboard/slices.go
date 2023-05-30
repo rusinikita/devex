@@ -1,5 +1,10 @@
 package dashboard
 
+import (
+	"fmt"
+	"strings"
+)
+
 func Map[T, V any](list []T, f func(in T) V) (result []V) {
 	for _, t := range list {
 		result = append(result, f(t))
@@ -57,4 +62,32 @@ func Index[T any, K comparable](list []T, key func(T) K) map[K]T {
 	}
 
 	return m
+}
+
+func SQLFilter(column, s string) string {
+	return strings.Join(
+		Map(strings.Split(s, ";"),
+			func(mainPart string) string {
+				parts := strings.Split(mainPart, ",")
+
+				parts = Map(parts, func(smallPart string) string {
+					sql := column
+
+					if strings.HasPrefix(smallPart, "!") {
+						smallPart = strings.TrimPrefix(smallPart, "!")
+						sql += " not"
+					}
+
+					return sql + " like '%" + smallPart + "%'"
+				})
+
+				sql := strings.Join(parts, " or ")
+
+				if len(parts) <= 1 {
+					return sql
+				}
+
+				return fmt.Sprintf("(%s)", sql)
+			},
+		), " and ")
 }

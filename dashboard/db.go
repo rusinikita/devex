@@ -110,3 +110,18 @@ func commitMessages(db *gorm.DB, filesMode bool, projects []project.ID, filesFil
 
 	return result, err
 }
+
+func imports(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (result allImports, err error) {
+	grouping := "package"
+	if filesMode {
+		grouping += ", name"
+	}
+
+	err = db.Model(project.File{}).
+		Select("alias", grouping, "lines", "imports").
+		Joins("join projects p on p.id = files.project").
+		Find(&result, "present > 0 and project in ?"+filesFilter, projects).
+		Error
+
+	return result, err
+}

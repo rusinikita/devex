@@ -7,6 +7,7 @@ require (
 	github.com/glebarez/sqlite v1.8.0
 	github.com/go-echarts/go-echarts/v2 v2.2.6
 	github.com/go-git/go-git/v5 v5.6.1
+	github.com/lucasb-eyer/go-colorful v1.2.0
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
 	gorm.io/gorm v1.25.0

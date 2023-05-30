@@ -7,6 +7,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 func sandkey(data values) components.Charter {
@@ -36,13 +37,18 @@ func sandkey(data values) components.Charter {
 	}
 
 	nodes := Map(Distinct(nodeNames), func(in string) opts.SankeyNode {
-		return opts.SankeyNode{Name: in}
+		return opts.SankeyNode{
+			Name: in,
+			ItemStyle: &opts.ItemStyle{
+				Color: colorful.FastWarmColor().Hex(),
+			},
+		}
 	})
 
 	sk.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{
 			Width:  "100%",
-			Height: strconv.Itoa(len(nodes)*20) + "px",
+			Height: strconv.Itoa(200+len(nodes)*20) + "px",
 		}),
 		charts.WithTitleOpts(opts.Title{
 			Title: "Contribution in last year",

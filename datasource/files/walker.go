@@ -13,7 +13,11 @@ type File struct {
 	Name    string
 	Lines   uint32
 	Symbols uint32
+	Tags    []string
+	Imports []string
 }
+
+var tags = []string{"nolint", "billing", "money", "order", "pylint: disable"}
 
 func Extract(_ context.Context, rootPath string, c chan<- File) error {
 	defer close(c)
@@ -42,16 +46,66 @@ func Extract(_ context.Context, rootPath string, c chan<- File) error {
 		}
 
 		content := string(data)
+		lines := strings.Split(content, "\n")
 
 		f := File{
 			Package: fPackage,
 			Name:    fName,
-			Lines:   uint32(len(strings.Split(content, "\n"))),
+			Lines:   uint32(len(lines)),
 			Symbols: uint32(len(content)),
+			Imports: extractImports(lines),
+			Tags:    extractTags(content),
 		}
 
 		c <- f
 
 		return err
 	})
+}
+
+func extractTags(content string) (tags []string) {
+	for _, tag := range tags {
+		if strings.Contains(content, tag) {
+			tags = append(tags, tag)
+		}
+	}
+
+	return tags
+}
+
+func extractImports(contentLines []string) (paths []string) {
+	inImportClosure := false
+	for _, line := range contentLines {
+		line = strings.TrimSpace(line)
+		if len(line) == 0 {
+			continue
+		}
+
+		if strings.HasPrefix(line, "import (") {
+			inImportClosure = true
+			continue
+		}
+
+		if inImportClosure && line == ")" {
+			inImportClosure = false
+			continue
+		}
+
+		if inImportClosure || strings.HasPrefix(line, "import") || strings.HasPrefix(line, "from") {
+			i := strings.TrimPrefix(line, "import")
+
+			split := strings.Split(i, " ")
+			i = split[0]
+			if len(split) > 1 {
+				i = split[1]
+			}
+
+			i = strings.TrimSpace(i)
+			i = strings.Trim(i, "\"")
+
+			paths = append(paths, i)
+		}
+	}
+
+	return paths
 }
