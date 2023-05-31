@@ -20,10 +20,16 @@
                 </ul>
 
             </details>
-            <label for="per_files">
-                <input type="checkbox" id="per_files" name="per_files" value="true" {{if .PerFiles}}checked{{end}}>
-                Per files counter
-            </label>
+            <fieldset>
+                <label for="per_files">
+                    <input type="checkbox" id="per_files" name="per_files" value="true" {{if .PerFiles}}checked{{end}}>
+                    Per files counter charts
+                </label>
+                <label for="per_files_imports">
+                    <input type="checkbox" id="per_files_imports" name="per_files_imports" value="true" {{if .PerFilesImports}}checked{{end}}>
+                    Per files imports chart
+                </label>
+            </fieldset>
         </div>
         <div class="grid">
             <div>
@@ -65,7 +71,7 @@
                 </small>
             </div>
             <div>
-                <label for="file_filters">Commit graphs filters</label>
+                <label for="file_filters">File content graphs filters</label>
                 <input type="text" id="file_filters" name="file_filters" {{with .FileFilters}}value="{{.}}"{{end}}>
                 <small>
                     File content comma separated keywords for file charts. Separate with ';' for another category.

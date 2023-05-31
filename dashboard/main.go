@@ -3,6 +3,7 @@ package dashboard
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
 	"html/template"
 	"net/http"
 	"strings"
@@ -19,13 +20,14 @@ import (
 var form string
 
 type Params struct {
-	ProjectIDs    []project.ID `form:"project_ids"`
-	PerFiles      bool         `form:"per_files"`
-	PackageFilter string       `form:"package_filter"`
-	NameFilter    string       `form:"name_filter"`
-	TrimPackage   string       `form:"trim_package"`
-	CommitFilters string       `form:"commit_filters"`
-	FileFilters   string       `form:"file_filters"`
+	ProjectIDs      []project.ID `form:"project_ids"`
+	PerFiles        bool         `form:"per_files"`
+	PerFilesImports bool         `form:"per_files_imports"`
+	PackageFilter   string       `form:"package_filter"`
+	NameFilter      string       `form:"name_filter"`
+	TrimPackage     string       `form:"trim_package"`
+	CommitFilters   string       `form:"commit_filters"`
+	FileFilters     string       `form:"file_filters"`
 }
 
 func (p Params) sqlFilter() (sql string) {
@@ -73,12 +75,19 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 
 	page.AddCharts(treeMap(sizes))
 
-	fixes, err := commitMessages(db, params.PerFiles, dataProjects, sqlFilter)
+	fileCommits, err := commitMessages(db, params.PerFiles, dataProjects, sqlFilter, " and "+SQLFilter("c.message", params.CommitFilters))
 	if err != nil {
 		return err
 	}
 
-	page.AddCharts(bar(fixes))
+	page.AddCharts(bar("Commits", fmt.Sprintf("Changes with '%s' filter applied to file", params.CommitFilters), fileCommits))
+
+	// fileContents, err := commitMessages(db, params.PerFiles, dataProjects, sqlFilter, " and "+SQLFilter("c.message", params.CommitFilters))
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// page.AddCharts(bar("Contents", "Files with keywords in content",fileContents))
 
 	contibs, err := contribution(db, dataProjects, sqlFilter)
 	if err != nil {
@@ -87,7 +96,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 
 	page.AddCharts(sandkey(contibs))
 
-	fileImports, err := imports(db, params.PerFiles, dataProjects, sqlFilter)
+	fileImports, err := imports(db, params.PerFilesImports, dataProjects, sqlFilter)
 	if err != nil {
 		return err
 	}
@@ -106,6 +115,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 		Projects         []project.Project
 		SelectedProjects Set[project.ID]
 		PerFiles         bool
+		PerFilesImports  bool
 		PackageFilter    string
 		NameFilter       string
 		TrimPackage      string
@@ -115,6 +125,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 		Projects:         projects,
 		SelectedProjects: ToSet(params.ProjectIDs),
 		PerFiles:         params.PerFiles,
+		PerFilesImports:  params.PerFilesImports,
 		PackageFilter:    params.PackageFilter,
 		NameFilter:       params.NameFilter,
 		TrimPackage:      params.TrimPackage,

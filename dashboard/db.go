@@ -89,7 +89,7 @@ func contribution(db *gorm.DB, projects []project.ID, filesFilter string) (resul
 	return result, err
 }
 
-func commitMessages(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (result values, err error) {
+func commitMessages(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter, commitsFilter string) (result values, err error) {
 	grouping := "package"
 	if filesMode {
 		grouping += ", name"
@@ -100,7 +100,7 @@ func commitMessages(db *gorm.DB, filesMode bool, projects []project.ID, filesFil
 		Joins("join git_commits c on c.id = git_changes.'commit'").
 		Joins("join files f on f.id = git_changes.file").
 		Joins("join projects p on p.id = f.project").
-		Where("git_changes.time > date('now', '-24 month') and f.present > 0 and (c.message like '%fix%' or c.message like '%bug%') and f.project in ?"+filesFilter, projects).
+		Where("git_changes.time > date('now', '-24 month') and f.present > 0 and f.project in ?"+filesFilter+commitsFilter, projects).
 		Group("alias, " + grouping).
 		Having("count(*) > 0").
 		Order("count(*) desc").

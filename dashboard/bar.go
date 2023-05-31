@@ -9,7 +9,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func bar(data values) components.Charter {
+func bar(name, desc string, data values) components.Charter {
 	Revert(data)
 
 	names := data.barNames()
@@ -25,8 +25,8 @@ func bar(data values) components.Charter {
 	bar := charts.NewBar()
 	bar.SetGlobalOptions(
 		charts.WithTitleOpts(opts.Title{
-			Title:    "Fix commits",
-			Subtitle: "Changes with 'fix' or 'bug' applied to file",
+			Title:    name,
+			Subtitle: desc,
 		}),
 		charts.WithTooltipOpts(opts.Tooltip{Show: true}),
 		charts.WithYAxisOpts(opts.YAxis{
