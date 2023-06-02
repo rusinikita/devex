@@ -16,6 +16,7 @@ type valueData struct {
 	Name    string
 	Author  string
 	Value   float64
+	Tags    []string `gorm:"serializer:json"`
 }
 
 type values []valueData
@@ -58,6 +59,38 @@ func (v values) simpleMap() (result []opts.TreeMapNode) {
 	}
 
 	return root.treeNode().Children
+}
+
+func (v values) tagsToValue(tagsFilter string) (result values) {
+	tags := map[string]bool{}
+
+	for _, split := range strings.Split(tagsFilter, ";") {
+		for _, s := range strings.Split(split, ",") {
+			tags[strings.TrimSuffix(s, "!")] = true
+		}
+	}
+
+	for _, data := range v {
+		data := data
+
+		for _, tag := range data.Tags {
+			if tags[tag] {
+				data.Value += 1
+			}
+		}
+
+		result = append(result, data)
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Value > result[j].Value
+	})
+
+	if len(result) > 20 {
+		return result[:20]
+	}
+
+	return result
 }
 
 type file struct {

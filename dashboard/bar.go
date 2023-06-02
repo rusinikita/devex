@@ -50,7 +50,7 @@ func bar(name, desc string, data values) components.Charter {
 		}),
 		charts.WithInitializationOpts(opts.Initialization{
 			Width:  "100%",
-			Height: fmt.Sprintf("%dpx", 20*len(barData)),
+			Height: fmt.Sprintf("%dpx", 200+20*len(barData)),
 		}),
 	)
 

@@ -82,6 +82,15 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 
 	page.AddCharts(bar("Commits", fmt.Sprintf("Changes with '%s' filter applied to file", params.CommitFilters), fileCommits))
 
+	fileTagsData, err := fileTags(db, dataProjects, sqlFilter, " and "+SQLFilter("tags", params.FileFilters))
+	if err != nil {
+		return err
+	}
+
+	fileTagsData = fileTagsData.tagsToValue(params.FileFilters)
+
+	page.AddCharts(bar("File tags", fmt.Sprintf("Files with tags from '%s' filter in file content", params.FileFilters), fileTagsData))
+
 	// fileContents, err := commitMessages(db, params.PerFiles, dataProjects, sqlFilter, " and "+SQLFilter("c.message", params.CommitFilters))
 	// if err != nil {
 	// 	return err
@@ -139,6 +148,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 	}
 
 	templates.PageTpl = strings.ReplaceAll(templates.PageTpl, "<body>", "<body class=\"container\">\n"+tpl.String())
+	templates.PageTpl = strings.ReplaceAll(templates.PageTpl, "<html>", "<html data-theme=\"light\">")
 
 	return page.Render(w)
 }

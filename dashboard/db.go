@@ -89,6 +89,8 @@ func contribution(db *gorm.DB, projects []project.ID, filesFilter string) (resul
 	return result, err
 }
 
+// TODO contribution pace. velocity per month
+
 func commitMessages(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter, commitsFilter string) (result values, err error) {
 	grouping := "package"
 	if filesMode {
@@ -107,6 +109,16 @@ func commitMessages(db *gorm.DB, filesMode bool, projects []project.ID, filesFil
 		Limit(40).
 		Scan(&result).
 		Error
+
+	return result, err
+}
+
+func fileTags(db *gorm.DB, projects []project.ID, filesFilter, tagsFilter string) (result values, err error) {
+	err = db.Model(project.File{}).
+		Select("alias", "package", "name", "tags").
+		Joins("join projects p on p.id = files.project").
+		Where("present > 0 and project in ?"+filesFilter+tagsFilter, projects).
+		Scan(&result).Error
 
 	return result, err
 }

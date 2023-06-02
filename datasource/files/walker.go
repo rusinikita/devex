@@ -17,7 +17,7 @@ type File struct {
 	Imports []string
 }
 
-var tags = []string{"nolint", "billing", "money", "order", "pylint: disable"}
+var Tags = []string{"todo", "fix", "note", "nolint", "billing", "money", "order", "pylint: disable"}
 
 func Extract(_ context.Context, rootPath string, c chan<- File) error {
 	defer close(c)
@@ -64,7 +64,7 @@ func Extract(_ context.Context, rootPath string, c chan<- File) error {
 }
 
 func extractTags(content string) (tags []string) {
-	for _, tag := range tags {
+	for _, tag := range Tags {
 		if strings.Contains(content, tag) {
 			tags = append(tags, tag)
 		}
