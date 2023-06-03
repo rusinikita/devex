@@ -16,6 +16,7 @@ import (
 )
 
 var tags = flag.String("tags", "", "file content tags")
+var lang = flag.String("lang", "go", "main project language")
 
 func main() {
 	flag.Parse()
@@ -36,7 +37,7 @@ func main() {
 
 		p := project.Project{
 			Alias:      alias,
-			Language:   "python",
+			Language:   *lang,
 			FolderPath: path,
 			CreatedAt:  time.Now(),
 		}
