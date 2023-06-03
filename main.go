@@ -4,14 +4,18 @@ import (
 	"context"
 	"flag"
 	"log"
+	"strings"
 	"time"
 
 	"devex_dashboard/dashboard"
 	"devex_dashboard/datacollector"
 	"devex_dashboard/datasource"
+	"devex_dashboard/datasource/files"
 	"devex_dashboard/db"
 	"devex_dashboard/project"
 )
+
+var tags = flag.String("tags", "", "file content tags")
 
 func main() {
 	flag.Parse()
@@ -23,12 +27,13 @@ func main() {
 
 	if command == "" {
 		log.Println("no command => running server")
-		command = "server"
+		command = "new"
 	}
 
 	switch command {
 	case "new":
 		path := flag.Arg(2)
+
 		p := project.Project{
 			Alias:      alias,
 			Language:   "python",
@@ -46,6 +51,10 @@ func main() {
 
 		if projectResult.RowsAffected == 0 {
 			log.Fatal(alias, " already exists, please use 'update' command")
+		}
+
+		if len(*tags) > 0 {
+			files.Tags = append(files.Tags, strings.Split(*tags, ",")...)
 		}
 
 		err = datacollector.Collect(context.TODO(), data, p, datasource.NewExtractors())
