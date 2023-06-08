@@ -110,7 +110,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 		return err
 	}
 
-	page.AddCharts(circularGraph(fileImports))
+	page.AddCharts(circularGraph(fileImports, params.TrimPackage))
 
 	page.SetLayout(components.PageNoneLayout)
 	page.AddCustomizedCSSAssets("https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css")

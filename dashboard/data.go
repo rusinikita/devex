@@ -16,7 +16,7 @@ type valueData struct {
 	Name    string
 	Author  string
 	Value   float64
-	Tags    []string `gorm:"serializer:json"`
+	Tags    map[string]uint32 `gorm:"serializer:json"`
 }
 
 type values []valueData
@@ -73,9 +73,9 @@ func (v values) tagsToValue(tagsFilter string) (result values) {
 	for _, data := range v {
 		data := data
 
-		for _, tag := range data.Tags {
+		for tag, count := range data.Tags {
 			if tags[tag] {
-				data.Value += 1
+				data.Value += float64(count)
 			}
 		}
 
@@ -199,7 +199,7 @@ type importsData struct {
 
 type allImports []importsData
 
-func (all allImports) tree() (categories []*opts.GraphCategory, nodes []opts.GraphNode, links []opts.GraphLink) {
+func (all allImports) tree(prefixes []string) (categories []*opts.GraphCategory, nodes []opts.GraphNode, links []opts.GraphLink) {
 	projectTrees := map[string]*file{}
 
 	maxLines := 0
@@ -211,7 +211,11 @@ func (all allImports) tree() (categories []*opts.GraphCategory, nodes []opts.Gra
 			projectTrees[data.Alias] = project
 		}
 
-		filePath := path.Join(strings.TrimPrefix(data.Package, "src/"), strings.TrimSuffix(data.Name, ".py"))
+		for _, p := range prefixes {
+			data.Package = strings.TrimPrefix(data.Package, p)
+		}
+
+		filePath := path.Join(data.Package, strings.TrimSuffix(data.Name, ".py"))
 		f, ok := project.children[filePath]
 		if !ok {
 			f = newFile(filePath, 0)
@@ -225,17 +229,19 @@ func (all allImports) tree() (categories []*opts.GraphCategory, nodes []opts.Gra
 			maxLines = moduleLines
 		}
 
-		for _, i := range data.Imports {
-			trimmedImport := strings.TrimPrefix(i, "go.avito.ru/msg/service-seller-audience/")
-			trimmedImport = strings.TrimPrefix(trimmedImport, "go.avito.ru/av/service-messenger-push/")
-			if !strings.Contains(trimmedImport, "/") {
-				trimmedImport = strings.ReplaceAll(trimmedImport, ".", "/")
+		for _, imprt := range data.Imports {
+			for _, p := range prefixes {
+				imprt = strings.TrimPrefix(imprt, p)
 			}
-			if len(trimmedImport) < 3 || trimmedImport == "internal" {
+
+			if !strings.Contains(imprt, "/") {
+				imprt = strings.ReplaceAll(imprt, ".", "/")
+			}
+			if len(imprt) < 3 || imprt == "" {
 				continue
 			}
 
-			f.children[trimmedImport] = nil
+			f.children[imprt] = nil
 		}
 	}
 

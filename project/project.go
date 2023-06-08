@@ -48,8 +48,8 @@ type File struct {
 	Name    string
 	Lines   uint32
 	Symbols uint32
-	Tags    []string `gorm:"serializer:json"` // experiment with tags: nolint,billing,money,order
-	Imports []string `gorm:"serializer:json"`
+	Tags    map[string]uint32 `gorm:"serializer:json"` // experiment with tags: nolint,billing,money,order
+	Imports []string          `gorm:"serializer:json"`
 	Present bool
 }
 

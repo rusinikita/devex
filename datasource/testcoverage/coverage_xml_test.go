@@ -46,7 +46,7 @@ func TestExtractXml(t *testing.T) {
 }
 
 func TestDebug(t *testing.T) {
-	// t.Skip("only for hand testing")
+	t.Skip("only for hand testing")
 
 	c := make(chan Package)
 

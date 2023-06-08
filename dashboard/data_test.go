@@ -10,9 +10,9 @@ import (
 )
 
 func TestName2(t *testing.T) {
-	// t.Skip("local test")
+	t.Skip("local test")
 
-	result, err := commitMessages(db.TestDB("../devex_bd.db").Debug(), false, []project.ID{1}, "")
+	result, err := commitMessages(db.TestDB("../devex_bd.db").Debug(), false, []project.ID{1}, "", "")
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, result)

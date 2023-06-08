@@ -13,7 +13,7 @@ type File struct {
 	Name    string
 	Lines   uint32
 	Symbols uint32
-	Tags    []string
+	Tags    map[string]uint32
 	Imports []string
 }
 
@@ -63,11 +63,17 @@ func Extract(_ context.Context, rootPath string, c chan<- File) error {
 	})
 }
 
-func extractTags(content string) (tags []string) {
+func extractTags(content string) (tags map[string]uint32) {
+	tags = map[string]uint32{}
+	content = strings.ToLower(content)
+
 	for _, tag := range Tags {
-		if strings.Contains(content, tag) {
-			tags = append(tags, tag)
+		count := strings.Count(content, tag)
+		if count == 0 {
+			continue
 		}
+
+		tags[tag] = uint32(count)
 	}
 
 	return tags
