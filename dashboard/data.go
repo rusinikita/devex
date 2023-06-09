@@ -15,15 +15,53 @@ type valueData struct {
 	Package string
 	Name    string
 	Author  string
+	Time    string
 	Value   float64
 	Tags    map[string]uint32 `gorm:"serializer:json"`
 }
 
 type values []valueData
 
+func (v values) withPackagesTrimmed(prefixes []string) values {
+	for i := range v {
+		v[i].Package = MultiTrimPrefix(v[i].Package, prefixes)
+	}
+
+	return v
+}
+
 func (v values) barNames() []string {
 	return Map(v, func(d valueData) string {
 		return filepath.Join(d.Alias, d.Package, d.Name)
+	})
+}
+
+func (v values) timeValues() (r []string) {
+	for _, d := range v {
+		r = append(r, d.Time)
+	}
+
+	r = Distinct(r)
+	sort.Strings(r)
+
+	return r
+}
+
+func (v values) bar3dValues() (r [][3]any) {
+	return Map(v, func(d valueData) [3]any {
+		nameFormat := filepath.Join(d.Alias, d.Package, d.Name)
+
+		return [3]any{d.Time, nameFormat, d.Value}
+	})
+}
+
+func (v values) max() float64 {
+	return Fold(v, func(item valueData, value float64) float64 {
+		if item.Value > value {
+			return item.Value
+		}
+
+		return value
 	})
 }
 
@@ -150,45 +188,6 @@ func (f file) treeNode() opts.TreeMapNode {
 	return node
 }
 
-type timedData struct {
-	Alias   string
-	Package string
-	Name    string
-	BarTime string
-	Value   int64
-}
-
-type timeSeriesData []timedData
-
-func (l timeSeriesData) timeValues() (r []string) {
-	for _, d := range l {
-		r = append(r, d.BarTime)
-	}
-
-	r = Distinct(r)
-	sort.Strings(r)
-
-	return r
-}
-
-func (l timeSeriesData) bar3dValues() (r [][3]any) {
-	return Map(l, func(d timedData) [3]any {
-		nameFormat := filepath.Join(d.Alias, d.Package, d.Name)
-
-		return [3]any{d.BarTime, nameFormat, d.Value}
-	})
-}
-
-func (l timeSeriesData) max() int64 {
-	return Fold(l, func(item timedData, value int64) int64 {
-		if item.Value > value {
-			return item.Value
-		}
-
-		return value
-	})
-}
-
 type importsData struct {
 	Alias   string
 	Package string
@@ -199,7 +198,19 @@ type importsData struct {
 
 type allImports []importsData
 
-func (all allImports) tree(prefixes []string) (categories []*opts.GraphCategory, nodes []opts.GraphNode, links []opts.GraphLink) {
+func (all allImports) withPackagesTrimmed(prefixes []string) allImports {
+	for i := range all {
+		all[i].Package = MultiTrimPrefix(all[i].Package, prefixes)
+
+		for k := range all[i].Imports {
+			all[i].Imports[k] = MultiTrimPrefix(all[i].Imports[k], prefixes)
+		}
+	}
+
+	return all
+}
+
+func (all allImports) tree() (categories []*opts.GraphCategory, nodes []opts.GraphNode, links []opts.GraphLink) {
 	projectTrees := map[string]*file{}
 
 	maxLines := 0
@@ -209,10 +220,6 @@ func (all allImports) tree(prefixes []string) (categories []*opts.GraphCategory,
 		if !ok {
 			project = newFile(data.Alias, 0)
 			projectTrees[data.Alias] = project
-		}
-
-		for _, p := range prefixes {
-			data.Package = strings.TrimPrefix(data.Package, p)
 		}
 
 		filePath := path.Join(data.Package, strings.TrimSuffix(data.Name, ".py"))
@@ -230,10 +237,6 @@ func (all allImports) tree(prefixes []string) (categories []*opts.GraphCategory,
 		}
 
 		for _, imprt := range data.Imports {
-			for _, p := range prefixes {
-				imprt = strings.TrimPrefix(imprt, p)
-			}
-
 			if !strings.Contains(imprt, "/") {
 				imprt = strings.ReplaceAll(imprt, ".", "/")
 			}

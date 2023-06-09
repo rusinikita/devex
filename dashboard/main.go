@@ -57,6 +57,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 	}
 
 	sqlFilter := params.sqlFilter()
+	packagePrefs := strings.Split(params.TrimPackage, ",")
 
 	barNames, data, err := gitChangesData(db, params.PerFiles, dataProjects, sqlFilter)
 	if err != nil {
@@ -66,19 +67,21 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 	// RENDER
 	page := components.NewPage()
 
-	page.AddCharts(heatmap(barNames, data))
+	page.AddCharts(heatmap(barNames.withPackagesTrimmed(packagePrefs).barNames(), data.withPackagesTrimmed(packagePrefs)))
 
 	sizes, err := fileSizes(db, dataProjects, sqlFilter)
 	if err != nil {
 		return err
 	}
 
-	page.AddCharts(treeMap(sizes))
+	page.AddCharts(treeMap(sizes.withPackagesTrimmed(packagePrefs)))
 
 	fileCommits, err := commitMessages(db, params.PerFiles, dataProjects, sqlFilter, " and "+SQLFilter("c.message", params.CommitFilters))
 	if err != nil {
 		return err
 	}
+
+	fileCommits = fileCommits.withPackagesTrimmed(packagePrefs)
 
 	page.AddCharts(bar("Commits", fmt.Sprintf("Changes with '%s' filter applied to file", params.CommitFilters), fileCommits))
 
@@ -87,7 +90,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 		return err
 	}
 
-	fileTagsData = fileTagsData.tagsToValue(params.FileFilters)
+	fileTagsData = fileTagsData.tagsToValue(params.FileFilters).withPackagesTrimmed(packagePrefs)
 
 	page.AddCharts(bar("File tags", fmt.Sprintf("Files with tags from '%s' filter in file content", params.FileFilters), fileTagsData))
 
@@ -103,14 +106,14 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 		return err
 	}
 
-	page.AddCharts(sandkey(contibs))
+	page.AddCharts(sandkey(contibs.withPackagesTrimmed(packagePrefs)))
 
 	fileImports, err := imports(db, params.PerFilesImports, dataProjects, sqlFilter)
 	if err != nil {
 		return err
 	}
 
-	page.AddCharts(circularGraph(fileImports, params.TrimPackage))
+	page.AddCharts(circularGraph(fileImports.withPackagesTrimmed(packagePrefs)))
 
 	page.SetLayout(components.PageNoneLayout)
 	page.AddCustomizedCSSAssets("https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css")

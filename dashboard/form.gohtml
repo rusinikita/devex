@@ -55,8 +55,8 @@
                 <label for="trim_package">Trim packages path</label>
                 <input type="text" id="trim_package" name="trim_package" {{with .TrimPackage}}value="{{.}}"{{end}}>
                 <small>
-                    Prefix to cut off from folder path to get package path.
-                    <em data-tooltip="src/">Example</em>
+                    Prefix to cut off from package and import paths. Dependency graph can't connect folders and imports if incorrect config.
+                    <em data-tooltip="src/,internal/,github.com/myprofile/myproject/">Example</em>
                 </small>
             </div>
         </div>

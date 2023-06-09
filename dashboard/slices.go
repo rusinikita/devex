@@ -91,3 +91,13 @@ func SQLFilter(column, s string) string {
 			},
 		), " and ")
 }
+
+func MultiTrimPrefix(s string, pp []string) (r string) {
+	r = s
+
+	for _, p := range pp {
+		r = strings.TrimPrefix(r, p)
+	}
+
+	return r
+}

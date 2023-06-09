@@ -8,9 +8,7 @@ import (
 	"devex_dashboard/project"
 )
 
-func gitChangesData(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (barNames []string, result []timedData, err error) {
-	var bars values
-
+func gitChangesData(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (bars, result values, err error) {
 	// Future: months/weeks selector
 
 	grouping := "alias, package"
@@ -44,10 +42,10 @@ func gitChangesData(db *gorm.DB, filesMode bool, projects []project.ID, filesFil
 		return nil, nil, err
 	}
 
-	barNames = bars.barNames()
+	barStrings := bars.barNames()
 
 	sql := `
-	select %[1]s, date("time", 'start of month') as bar_time, sum(rows_added + rows_removed) as value
+	select %[1]s, date("time", 'start of month') as 'time', sum(rows_added + rows_removed) as value
 	from git_changes as ch
 	join files f on ch.file = f.id
 	join projects p on f.project = p.id
@@ -58,9 +56,9 @@ func gitChangesData(db *gorm.DB, filesMode bool, projects []project.ID, filesFil
 `
 	sql = fmt.Sprintf(sql, grouping, barFilter)
 
-	err = db.Raw(sql, projects, barNames).Scan(&result).Error
+	err = db.Raw(sql, projects, barStrings).Scan(&result).Error
 
-	return barNames, result, err
+	return bars, result, err
 }
 
 func fileSizes(db *gorm.DB, projects []project.ID, filesFilter string) (result values, err error) {
