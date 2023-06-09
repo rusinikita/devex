@@ -18,22 +18,27 @@ func sandkey(data values) components.Charter {
 		links     []opts.SankeyLink
 	)
 
+	projects := map[string]float32{}
+
 	for _, v := range data {
-		p := path.Join(v.Alias, v.Package)
+		p := path.Join(v.Alias, v.Package, v.Name)
 		nodeNames = append(nodeNames, v.Author, v.Alias, p)
 
-		links = append(links,
-			opts.SankeyLink{
-				Source: v.Author,
-				Target: p,
-				Value:  float32(v.Value),
-			},
-			opts.SankeyLink{
-				Source: p,
-				Target: v.Alias,
-				Value:  float32(v.Value),
-			},
-		)
+		projects[path.Join(v.Alias, v.Author)] += float32(v.Value)
+
+		links = append(links, opts.SankeyLink{
+			Source: v.Author,
+			Target: p,
+			Value:  float32(v.Value),
+		})
+	}
+
+	for p, value := range projects {
+		links = append(links, opts.SankeyLink{
+			Source: path.Dir(p),
+			Target: path.Base(p),
+			Value:  value,
+		})
 	}
 
 	nodes := Map(Distinct(nodeNames), func(in string) opts.SankeyNode {

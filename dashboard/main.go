@@ -101,7 +101,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 	//
 	// page.AddCharts(bar("Contents", "Files with keywords in content",fileContents))
 
-	contibs, err := contribution(db, dataProjects, sqlFilter)
+	contibs, err := contribution(db, params.PerFiles, dataProjects, sqlFilter)
 	if err != nil {
 		return err
 	}
