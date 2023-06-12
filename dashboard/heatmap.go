@@ -6,10 +6,12 @@ import (
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
+
+	"devex_dashboard/slices"
 )
 
 func heatmap(barNames []string, data values) components.Charter {
-	Revert(barNames)
+	slices.Revert(barNames)
 
 	hm := charts.NewHeatMap()
 	hm.SetGlobalOptions(
@@ -59,7 +61,7 @@ func heatmap(barNames []string, data values) components.Charter {
 		}),
 	)
 
-	heatmapdata := Map(data.bar3dValues(), func(in [3]any) opts.HeatMapData {
+	heatmapdata := slices.Map(data.bar3dValues(), func(in [3]any) opts.HeatMapData {
 		return opts.HeatMapData{Value: in}
 	})
 

@@ -11,7 +11,7 @@ import (
 )
 
 func TestExtract(t *testing.T) {
-	t.Skip("only local testing")
+	// t.Skip("only local testing")
 
 	c := make(chan File)
 

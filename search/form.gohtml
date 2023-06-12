@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head data-theme="light">
+    <meta charset="UTF-8">
+    <title>Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" rel="stylesheet">
+</head>
+<body class="container">
+<!DOCTYPE html>
+    <article>
+        <form>
+            <div>
+                <label for="q">Search query</label>
+                <input type="text" id="q" name="q" {{with .Query}}value="{{.}}"{{end}}>
+                <small>
+                    You can paste a code sample or input a question.
+                </small>
+            </div>
+            <button type="submit">Search</button>
+        </form>
+    </article>
+
+    {{range .Results}}
+
+        <article>
+            <header>
+                {{.Path}}
+            </header>
+        </article>
+
+    {{end}}
+</body>
+</html>

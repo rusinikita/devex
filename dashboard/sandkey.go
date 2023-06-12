@@ -8,6 +8,8 @@ import (
 	"github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/lucasb-eyer/go-colorful"
+
+	"devex_dashboard/slices"
 )
 
 func sandkey(data values) components.Charter {
@@ -41,7 +43,7 @@ func sandkey(data values) components.Charter {
 		})
 	}
 
-	nodes := Map(Distinct(nodeNames), func(in string) opts.SankeyNode {
+	nodes := slices.Map(slices.Distinct(nodeNames), func(in string) opts.SankeyNode {
 		return opts.SankeyNode{
 			Name: in,
 			ItemStyle: &opts.ItemStyle{

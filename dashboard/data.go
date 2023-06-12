@@ -8,6 +8,8 @@ import (
 
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/lucasb-eyer/go-colorful"
+
+	"devex_dashboard/slices"
 )
 
 type valueData struct {
@@ -24,14 +26,14 @@ type values []valueData
 
 func (v values) withPackagesTrimmed(prefixes []string) values {
 	for i := range v {
-		v[i].Package = MultiTrimPrefix(v[i].Package, prefixes)
+		v[i].Package = slices.MultiTrimPrefix(v[i].Package, prefixes)
 	}
 
 	return v
 }
 
 func (v values) barNames() []string {
-	return Map(v, func(d valueData) string {
+	return slices.Map(v, func(d valueData) string {
 		return filepath.Join(d.Alias, d.Package, d.Name)
 	})
 }
@@ -41,14 +43,14 @@ func (v values) timeValues() (r []string) {
 		r = append(r, d.Time)
 	}
 
-	r = Distinct(r)
+	r = slices.Distinct(r)
 	sort.Strings(r)
 
 	return r
 }
 
 func (v values) bar3dValues() (r [][3]any) {
-	return Map(v, func(d valueData) [3]any {
+	return slices.Map(v, func(d valueData) [3]any {
 		nameFormat := filepath.Join(d.Alias, d.Package, d.Name)
 
 		return [3]any{d.Time, nameFormat, d.Value}
@@ -56,7 +58,7 @@ func (v values) bar3dValues() (r [][3]any) {
 }
 
 func (v values) max() float64 {
-	return Fold(v, func(item valueData, value float64) float64 {
+	return slices.Fold(v, func(item valueData, value float64) float64 {
 		if item.Value > value {
 			return item.Value
 		}
@@ -200,10 +202,10 @@ type allImports []importsData
 
 func (all allImports) withPackagesTrimmed(prefixes []string) allImports {
 	for i := range all {
-		all[i].Package = MultiTrimPrefix(all[i].Package, prefixes)
+		all[i].Package = slices.MultiTrimPrefix(all[i].Package, prefixes)
 
 		for k := range all[i].Imports {
-			all[i].Imports[k] = MultiTrimPrefix(all[i].Imports[k], prefixes)
+			all[i].Imports[k] = slices.MultiTrimPrefix(all[i].Imports[k], prefixes)
 		}
 	}
 

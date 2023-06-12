@@ -3,6 +3,7 @@ package files
 import (
 	"context"
 	"io/fs"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -45,6 +46,11 @@ func Extract(_ context.Context, rootPath string, c chan<- File) error {
 			return err
 		}
 
+		// skip not code files
+		if !strings.HasPrefix(http.DetectContentType(data), "text/") {
+			return nil
+		}
+
 		content := string(data)
 		lines := strings.Split(content, "\n")
 
@@ -59,7 +65,7 @@ func Extract(_ context.Context, rootPath string, c chan<- File) error {
 
 		c <- f
 
-		return err
+		return nil
 	})
 }
 

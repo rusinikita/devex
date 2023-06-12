@@ -60,7 +60,7 @@ func main() {
 
 		err = datacollector.Collect(context.TODO(), data, p, datasource.NewExtractors())
 		if err != nil {
-			log.Fatal("collect error", err)
+			log.Fatal("collect error ", err)
 		}
 
 	case "update":

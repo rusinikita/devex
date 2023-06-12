@@ -6,6 +6,8 @@ import (
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
+
+	"devex_dashboard/slices"
 )
 
 func bar3D(barNames []string, data values) components.Charter {
@@ -48,7 +50,7 @@ func bar3D(barNames []string, data values) components.Charter {
 		}),
 	)
 
-	chart3d := Map(data.bar3dValues(), func(in [3]any) opts.Chart3DData {
+	chart3d := slices.Map(data.bar3dValues(), func(in [3]any) opts.Chart3DData {
 		return opts.Chart3DData{Value: in[:]}
 	})
 

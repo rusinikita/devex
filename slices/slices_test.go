@@ -1,4 +1,4 @@
-package dashboard
+package slices
 
 import (
 	"testing"

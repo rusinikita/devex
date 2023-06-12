@@ -13,7 +13,9 @@ import (
 	"github.com/go-echarts/go-echarts/v2/templates"
 	"gorm.io/gorm"
 
+	database "devex_dashboard/db"
 	"devex_dashboard/project"
+	"devex_dashboard/slices"
 )
 
 //go:embed form.gohtml
@@ -32,11 +34,11 @@ type Params struct {
 
 func (p Params) sqlFilter() (sql string) {
 	if p.PackageFilter != "" {
-		sql += "and " + SQLFilter("package", p.PackageFilter)
+		sql += "and " + slices.SQLFilter("package", p.PackageFilter)
 	}
 
 	if p.NameFilter != "" {
-		sql += " and " + SQLFilter("name", p.NameFilter)
+		sql += " and " + slices.SQLFilter("name", p.NameFilter)
 	}
 
 	return sql
@@ -76,7 +78,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 
 	page.AddCharts(treeMap(sizes.withPackagesTrimmed(packagePrefs)))
 
-	fileCommits, err := commitMessages(db, params.PerFiles, dataProjects, sqlFilter, " and "+SQLFilter("c.message", params.CommitFilters))
+	fileCommits, err := commitMessages(db, params.PerFiles, dataProjects, sqlFilter, " and "+slices.SQLFilter("c.message", params.CommitFilters))
 	if err != nil {
 		return err
 	}
@@ -85,7 +87,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 
 	page.AddCharts(bar("Commits", fmt.Sprintf("Changes with '%s' filter applied to file", params.CommitFilters), fileCommits))
 
-	fileTagsData, err := fileTags(db, dataProjects, sqlFilter, " and "+SQLFilter("tags", params.FileFilters))
+	fileTagsData, err := fileTags(db, dataProjects, sqlFilter, " and "+slices.SQLFilter("tags", params.FileFilters))
 	if err != nil {
 		return err
 	}
@@ -125,7 +127,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 	var tpl bytes.Buffer
 	formData := struct {
 		Projects         []project.Project
-		SelectedProjects Set[project.ID]
+		SelectedProjects slices.Set[project.ID]
 		PerFiles         bool
 		PerFilesImports  bool
 		PackageFilter    string
@@ -135,7 +137,7 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 		FileFilters      string
 	}{
 		Projects:         projects,
-		SelectedProjects: ToSet(params.ProjectIDs),
+		SelectedProjects: slices.ToSet(params.ProjectIDs),
 		PerFiles:         params.PerFiles,
 		PerFilesImports:  params.PerFilesImports,
 		PackageFilter:    params.PackageFilter,
@@ -160,6 +162,10 @@ func RunServer(db *gorm.DB) error {
 	engine := gin.New()
 
 	engine.Use(func(ctx *gin.Context) {
+		ctx.Set("db", db)
+	})
+
+	engine.Use(func(ctx *gin.Context) {
 		ctx.Next()
 
 		err := ctx.Errors.Last()
@@ -182,7 +188,7 @@ func RunServer(db *gorm.DB) error {
 			return
 		}
 
-		err := renderPage(db, params, ctx.Writer)
+		err := renderPage(database.GetDB(ctx), params, ctx.Writer)
 		if err != nil {
 			ctx.Error(err)
 		}
