@@ -74,7 +74,7 @@ Just for fun and...
 
 > Sorry. You need to compile from the source code at that moment using the Go compiler.
 > 
-> If you are interested in binary, please comment on this issue.
+> If you are interested in binary, please comment on [this issue](https://github.com/rusinikita/devex/issues/1).
 I'll provide you with the binary as quickly as possible.
 
 From a project folder run:
