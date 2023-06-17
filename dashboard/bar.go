@@ -54,6 +54,15 @@ func bar(name, desc string, data values) components.Charter {
 			Width:  "100%",
 			Height: fmt.Sprintf("%dpx", 200+20*len(barData)),
 		}),
+		charts.WithToolboxOpts(opts.Toolbox{
+			Show:   true,
+			Orient: "horizontal",
+			Left:   "right",
+			Feature: &opts.ToolBoxFeature{
+				SaveAsImage: &opts.ToolBoxFeatureSaveAsImage{
+					Show: true, Title: "Save as image"},
+			},
+		}),
 	)
 
 	bar.AddSeries("", barData)

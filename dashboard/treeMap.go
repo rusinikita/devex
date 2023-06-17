@@ -4,14 +4,12 @@ import (
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
-	"github.com/go-echarts/go-echarts/v2/types"
 )
 
 func treeMap(data values) components.Charter {
 	tm := charts.NewTreeMap()
 
 	tm.SetGlobalOptions(
-		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeMacarons}),
 		charts.WithTitleOpts(opts.Title{
 			Title:    "File size chart",
 			Subtitle: "Project code lines count",

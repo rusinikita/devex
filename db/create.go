@@ -27,7 +27,7 @@ func createDB(file string) *gorm.DB {
 }
 
 func DB() *gorm.DB {
-	return createDB("devex_bd.db")
+	return createDB("devex.db")
 }
 
 func TestDB(file ...string) *gorm.DB {

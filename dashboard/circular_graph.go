@@ -36,6 +36,17 @@ func circularGraph(data allImports) components.Charter {
 			TriggerOn: "mousemove|click",
 			Formatter: "{b}: {c} lines",
 		}),
+		charts.WithToolboxOpts(opts.Toolbox{
+			Show:   true,
+			Orient: "horizontal",
+			Left:   "right",
+			Feature: &opts.ToolBoxFeature{
+				SaveAsImage: &opts.ToolBoxFeatureSaveAsImage{
+					Show: true, Title: "Save as image"},
+				Restore: &opts.ToolBoxFeatureRestore{
+					Show: true, Title: "Reset"},
+			},
+		}),
 	)
 
 	sk.AddSeries("graph", nodes, links,

@@ -21,6 +21,15 @@ func heatmap(barNames []string, data values) components.Charter {
 		}),
 		charts.WithTooltipOpts(opts.Tooltip{Show: true}),
 		charts.WithLegendOpts(opts.Legend{Show: false}),
+		charts.WithToolboxOpts(opts.Toolbox{
+			Show:   true,
+			Orient: "horizontal",
+			Left:   "right",
+			Feature: &opts.ToolBoxFeature{
+				SaveAsImage: &opts.ToolBoxFeatureSaveAsImage{
+					Show: true, Title: "Save as image"},
+			},
+		}),
 		charts.WithXAxisOpts(opts.XAxis{
 			Type: "category",
 			Name: "Date",
