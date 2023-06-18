@@ -6,7 +6,7 @@ Collects and visualizes code repository data.
 
 Shows "hot" packages and files.
 
-![hot files](img/Code%20changes%20per%20month.png)
+![](img/Code%20changes%20per%20month.png)
 </br>*Screenshot of Flipper [iOS](https://github.com/flipperdevices/Flipper-iOS-App) and [Android](https://github.com/flipperdevices/Flipper-Android-App) codebase visualization. [This filter applied](http://localhost:1080/?project_ids=3&project_ids=4&per_files=true&package_filter=%21res%2Fdrawable%3B%21test%3B%21thirdparty&name_filter=.kt%2C.swift%3B%21.pb.swift%3B%21test&trim_package=Flipper%2FPackages%2F%2Ccomponents%2F%2Csrc%2Fmain%2Fjava%2Fcom%2Fflipperdevices%2F&commit_filters=fix%2Cbug&file_filters=todo%2Cnote%2Cfix)*
 
 Helps to compare project changes distribution. Illustrates:
@@ -19,7 +19,7 @@ Helps to compare projects code base size and organisation. Illustrates:
 - Different code lines per task ratio (see example).
 - "Big ball of mug" files and packages.
 
-![Flipper iOS vs Android](img/File%20size%20chart.png)
+![](img/File%20size%20chart.png)
 </br>*Screenshot of Flipper [iOS](https://github.com/flipperdevices/Flipper-iOS-App) and [Android](https://github.com/flipperdevices/Flipper-Android-App) codebase visualization. [This filter applied](http://localhost:1080/?project_ids=3&project_ids=4&per_files=true&package_filter=%21res%2Fdrawable%3B%21test%3B%21thirdparty&name_filter=.kt%2C.swift%3B%21.pb.swift%3B%21test&trim_package=Flipper%2FPackages%2F%2Ccomponents%2F%2Csrc%2Fmain%2Fjava%2Fcom%2Fflipperdevices%2F&commit_filters=fix%2Cbug&file_filters=todo%2Cnote%2Cfix)*
 
 ### Last year contribution
@@ -35,6 +35,7 @@ Helps to visualize file fix rate, some notes, or specific content (try `money,bi
 
 ![](img/Commits.png)
 </br>*Screenshot of Flipper [iOS](https://github.com/flipperdevices/Flipper-iOS-App) and [Android](https://github.com/flipperdevices/Flipper-Android-App) codebase visualization. [This filter applied](http://localhost:1080/?project_ids=3&project_ids=4&package_filter=%21res%2Fdrawable%3B%21test%3B%21thirdparty&name_filter=.kt%2C.swift%3B%21.pb.swift%3B%21test&trim_package=Flipper%2FPackages%2F%2Ccomponents%2F%2Csrc%2Fmain%2Fjava%2Fcom%2Fflipperdevices%2F%2Csrc%2Fmain%2Fkotlin%2Fcom%2Fflipperdevices%2F%2Chronization%2Fimpl%2F&commit_filters=fix%2Cbug&file_filters=todo%2Cnote%2Cfix)*
+
 
 ![](img/File%20tags.png)
 </br>*Screenshot of Flipper [iOS](https://github.com/flipperdevices/Flipper-iOS-App) and [Android](https://github.com/flipperdevices/Flipper-Android-App) codebase visualization. [This filter applied](http://localhost:1080/?project_ids=3&project_ids=4&package_filter=%21res%2Fdrawable%3B%21test%3B%21thirdparty&name_filter=.kt%2C.swift%3B%21.pb.swift%3B%21test&trim_package=Flipper%2FPackages%2F%2Ccomponents%2F%2Csrc%2Fmain%2Fjava%2Fcom%2Fflipperdevices%2F%2Csrc%2Fmain%2Fkotlin%2Fcom%2Fflipperdevices%2F%2Chronization%2Fimpl%2F&commit_filters=fix%2Cbug&file_filters=todo%2Cnote%2Cfix)*
