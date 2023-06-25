@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"devex_dashboard/dashboard"
-	"devex_dashboard/datacollector"
-	"devex_dashboard/datasource"
-	"devex_dashboard/datasource/files"
-	"devex_dashboard/db"
-	"devex_dashboard/project"
+	"github.com/rusinikita/devex/dashboard"
+	"github.com/rusinikita/devex/datacollector"
+	"github.com/rusinikita/devex/datasource"
+	"github.com/rusinikita/devex/datasource/files"
+	"github.com/rusinikita/devex/db"
+	"github.com/rusinikita/devex/project"
 )
 
 var tags = flag.String("tags", "", "file content tags")

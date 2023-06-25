@@ -5,12 +5,10 @@ import (
 
 	"gorm.io/gorm"
 
-	"devex_dashboard/project"
+	"github.com/rusinikita/devex/project"
 )
 
-func gitChangesData(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (bars, result values, err error) {
-	// Future: months/weeks selector
-
+func gitChangesTop(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (result values, err error) {
 	grouping := "alias, package"
 	barFilter := "alias || '/' || package"
 
@@ -31,18 +29,29 @@ func gitChangesData(db *gorm.DB, filesMode bool, projects []project.ID, filesFil
 		group by %[1]s, date("time", 'start of month'))
 	select %[1]s, count(*), sum(line_changes), avg(line_changes) as value
 	from fcm group by %[1]s
-	having count(*) > 6
+	having count(*) > 3
 	order by avg(line_changes) desc
-	limit 20
+	limit 1000
 `
 	sqlBars = fmt.Sprintf(sqlBars, grouping, filesFilter)
 
-	err = db.Raw(sqlBars, projects).Scan(&bars).Error
-	if err != nil {
-		return nil, nil, err
-	}
+	err = db.Raw(sqlBars, projects).Scan(&result).Error
+
+	return result, err
+}
+
+func gitChangesData(db *gorm.DB, filesMode bool, projects []project.ID, bars values) (result values, err error) {
+	// Future: months/weeks selector
 
 	barStrings := bars.barNames()
+
+	grouping := "alias, package"
+	barFilter := "alias || '/' || package"
+
+	if filesMode {
+		grouping += ", name"
+		barFilter += " || '/' || name"
+	}
 
 	sql := `
 	select %[1]s, date("time", 'start of month') as 'time', sum(rows_added + rows_removed) as value
@@ -58,7 +67,7 @@ func gitChangesData(db *gorm.DB, filesMode bool, projects []project.ID, filesFil
 
 	err = db.Raw(sql, projects, barStrings).Scan(&result).Error
 
-	return bars, result, err
+	return result, err
 }
 
 func fileSizes(db *gorm.DB, projects []project.ID, filesFilter string) (result values, err error) {

@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"devex_dashboard/db"
-	"devex_dashboard/project"
+	"github.com/rusinikita/devex/db"
+	"github.com/rusinikita/devex/project"
 )
 
 func TestName2(t *testing.T) {

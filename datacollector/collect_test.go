@@ -10,13 +10,13 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"devex_dashboard/datacollector"
-	"devex_dashboard/datasource"
-	"devex_dashboard/datasource/files"
-	"devex_dashboard/datasource/git"
-	"devex_dashboard/datasource/testcoverage"
-	"devex_dashboard/db"
-	"devex_dashboard/project"
+	"github.com/rusinikita/devex/datacollector"
+	"github.com/rusinikita/devex/datasource"
+	"github.com/rusinikita/devex/datasource/files"
+	"github.com/rusinikita/devex/datasource/git"
+	"github.com/rusinikita/devex/datasource/testcoverage"
+	"github.com/rusinikita/devex/db"
+	"github.com/rusinikita/devex/project"
 )
 
 func TestCollect(t *testing.T) {

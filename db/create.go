@@ -4,7 +4,7 @@ import (
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 
-	"devex_dashboard/datasource"
+	"github.com/rusinikita/devex/datasource"
 )
 
 func createDB(file string) *gorm.DB {

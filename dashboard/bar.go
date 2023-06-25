@@ -8,7 +8,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
 
-	"devex_dashboard/slices"
+	"github.com/rusinikita/devex/slices"
 )
 
 func bar(name, desc string, data values) components.Charter {

@@ -1,14 +1,16 @@
-module devex_dashboard
+module github.com/rusinikita/devex
 
 go 1.20
 
 require (
+	github.com/acheong08/cybertron v0.1.3-0.20230526061827-bda4623885f7
 	github.com/acheong08/vectordb v0.0.0-20230527163032-83ee790411cd
 	github.com/gin-gonic/gin v1.9.0
 	github.com/glebarez/sqlite v1.8.0
 	github.com/go-echarts/go-echarts/v2 v2.2.6
 	github.com/go-git/go-git/v5 v5.6.1
 	github.com/lucasb-eyer/go-colorful v1.2.0
+	github.com/rs/zerolog v1.27.0
 	github.com/stretchr/testify v1.8.3
 	golang.org/x/sync v0.2.0
 	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55
@@ -17,7 +19,6 @@ require (
 require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230217124315-7d5c6f04bbb8 // indirect
-	github.com/acheong08/cybertron v0.1.3-0.20230526061827-bda4623885f7 // indirect
 	github.com/acomagu/bufpipe v1.0.4 // indirect
 	github.com/bytedance/sonic v1.8.0 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
@@ -68,7 +69,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/rs/zerolog v1.27.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect

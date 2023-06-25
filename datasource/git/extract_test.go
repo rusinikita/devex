@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
 
-	git2 "devex_dashboard/datasource/git"
+	git2 "github.com/rusinikita/devex/datasource/git"
 )
 
 func createTestRepository(t *testing.T, commits, authors, files int) string {

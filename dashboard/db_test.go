@@ -6,8 +6,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"devex_dashboard/db"
-	"devex_dashboard/project"
+	"github.com/rusinikita/devex/db"
+	"github.com/rusinikita/devex/project"
 )
 
 func Test_fileSizes(t *testing.T) {
