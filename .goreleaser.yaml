@@ -48,6 +48,17 @@ release:
   draft: true
   prerelease: true
 
+brews:
+  -
+    name: devex
+    folder: Formula
+    homepage: "https://github.com/rusinikita/devex"
+    description: "Git codebase visualization. Development experience insights."
+    license: "MIT"
+    skip_upload: true
+    test: |
+      system "#{bin}/golangci-lint version"
+
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
