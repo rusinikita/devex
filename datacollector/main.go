@@ -8,11 +8,11 @@ import (
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 
-	"devex_dashboard/datasource"
-	"devex_dashboard/datasource/files"
-	"devex_dashboard/datasource/git"
-	"devex_dashboard/datasource/testcoverage"
-	"devex_dashboard/project"
+	"github.com/rusinikita/devex/datasource"
+	"github.com/rusinikita/devex/datasource/files"
+	"github.com/rusinikita/devex/datasource/git"
+	"github.com/rusinikita/devex/datasource/testcoverage"
+	"github.com/rusinikita/devex/project"
 )
 
 // DepWheel chart

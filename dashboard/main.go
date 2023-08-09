@@ -13,9 +13,9 @@ import (
 	"github.com/go-echarts/go-echarts/v2/templates"
 	"gorm.io/gorm"
 
-	database "devex_dashboard/db"
-	"devex_dashboard/project"
-	"devex_dashboard/slices"
+	database "github.com/rusinikita/devex/db"
+	"github.com/rusinikita/devex/project"
+	"github.com/rusinikita/devex/slices"
 )
 
 //go:embed form.gohtml
@@ -61,7 +61,17 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 	sqlFilter := params.sqlFilter()
 	packagePrefs := strings.Split(params.TrimPackage, ",")
 
-	barNames, data, err := gitChangesData(db, params.PerFiles, dataProjects, sqlFilter)
+	filesTop, err := gitChangesTop(db, params.PerFiles, dataProjects, sqlFilter)
+	if err != nil {
+		return err
+	}
+
+	heatmapBars := filesTop
+	if len(filesTop) > 20 {
+		heatmapBars = filesTop[:20]
+	}
+
+	data, err := gitChangesData(db, params.PerFiles, dataProjects, heatmapBars)
 	if err != nil {
 		return err
 	}
@@ -69,7 +79,9 @@ func renderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 	// RENDER
 	page := components.NewPage()
 
-	page.AddCharts(heatmap(barNames.withPackagesTrimmed(packagePrefs).barNames(), data.withPackagesTrimmed(packagePrefs)))
+	page.AddCharts(heatmap(heatmapBars.withPackagesTrimmed(packagePrefs).barNames(), data.withPackagesTrimmed(packagePrefs)))
+
+	page.AddCharts(bar("Top changes speed", "List of packages/files ordered by average change lines per month speed", filesTop))
 
 	sizes, err := fileSizes(db, dataProjects, sqlFilter)
 	if err != nil {

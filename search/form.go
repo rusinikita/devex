@@ -23,9 +23,9 @@ import (
 	"github.com/gin-gonic/gin/render"
 	"gorm.io/gorm"
 
-	database "devex_dashboard/db"
-	"devex_dashboard/project"
-	"devex_dashboard/slices"
+	database "github.com/rusinikita/devex/db"
+	"github.com/rusinikita/devex/project"
+	"github.com/rusinikita/devex/slices"
 )
 
 type query struct {

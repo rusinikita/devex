@@ -3,10 +3,10 @@ package datasource
 import (
 	"context"
 
-	"devex_dashboard/datasource/files"
-	"devex_dashboard/datasource/git"
-	"devex_dashboard/datasource/testcoverage"
-	"devex_dashboard/project"
+	"github.com/rusinikita/devex/datasource/files"
+	"github.com/rusinikita/devex/datasource/git"
+	"github.com/rusinikita/devex/datasource/testcoverage"
+	"github.com/rusinikita/devex/project"
 )
 
 type Extractor[T any] func(ctx context.Context, projectPath string, c chan<- T) error

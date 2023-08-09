@@ -9,7 +9,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 	"github.com/lucasb-eyer/go-colorful"
 
-	"devex_dashboard/slices"
+	"github.com/rusinikita/devex/slices"
 )
 
 func sandkey(data values) components.Charter {
