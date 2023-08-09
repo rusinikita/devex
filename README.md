@@ -97,7 +97,6 @@ If you are interested in it, please let me know in [this issue](https://github.c
 ## How to use
 
 1. `devex new {{project slug}} {{path}}` - it will put project data into `devex.db`
-   - Ignore `panic: close of closed channel`, that's OK.
    - Repeat that step onto other projects now or later.
 2. `devex server` - it will start single page server 
    - go to [localhost:1080](http://localhost:1080)
