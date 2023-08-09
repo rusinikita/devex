@@ -31,7 +31,7 @@ func gitChangesTop(db *gorm.DB, filesMode bool, projects []project.ID, filesFilt
 	from fcm group by %[1]s
 	having count(*) > 3
 	order by avg(line_changes) desc
-	limit 1000
+	limit 100
 `
 	sqlBars = fmt.Sprintf(sqlBars, grouping, filesFilter)
 
