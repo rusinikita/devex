@@ -53,7 +53,7 @@ brews:
     name: devex
     repository:
       owner: rusinikita
-      name: devex-homebrew-tap
+      name: homebrew-tap
     folder: Formula
     homepage: "https://github.com/rusinikita/devex"
     description: "Git codebase visualization. Development experience insights."

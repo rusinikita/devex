@@ -71,20 +71,35 @@ Just for fun and...
 2. These visualizations can not be used alone.
    You should combine it with performance metrics, error logs, linter issues, code coverage, and survey results.
 
+## Installation
+
+### Go way (for golang devs)
+
+```
+go install github.com/rusinikita/devex@lates
+```
+
+### Brew (Mac OS)
+
+```
+brew tap rusinikita/tap
+brew install rusinikita/tap/devex
+```
+
+### Binaries
+
+Place the [latest release](https://github.com/rusinikita/devex/releases) binary in PATH folder.
+
+### apt/yum package managers (Linux)
+
+If you are interested in it, please let me know in [this issue](https://github.com/rusinikita/devex/issues/2).
+
 ## How to use
 
-Sorry. 
-You need to use Go package manager to install devex. 
-You can easily [install it from here](https://go.dev/doc/install).
-
-> If you are interested in binary, please comment on [this issue](https://github.com/rusinikita/devex/issues/1).
-I'll provide you with the binary as quickly as possible.
-
-1. Install it with `go install github.com/rusinikita/devex@latest`
-2. `devex new {{project slug}} {{path}}` - it will put project data into `devex.db`
+1. `devex new {{project slug}} {{path}}` - it will put project data into `devex.db`
    - Ignore `panic: close of closed channel`, that's OK.
    - Repeat that step onto other projects now or later.
-3. `devex server` - it will start single page server 
+2. `devex server` - it will start single page server 
    - go to [localhost:1080](http://localhost:1080)
 
 If you have any questions, please ask and provide feedback on issues.
