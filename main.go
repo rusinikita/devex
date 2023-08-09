@@ -94,5 +94,7 @@ func main() {
 		if err != nil {
 			log.Fatal("server", err)
 		}
+	case "version":
+		println("v0.1")
 	}
 }
