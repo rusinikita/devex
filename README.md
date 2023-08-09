@@ -92,7 +92,7 @@ Place the [latest release](https://github.com/rusinikita/devex/releases) binary 
 
 ### apt/yum package managers (Linux)
 
-If you are interested in it, please let me know in [this issue](https://github.com/rusinikita/devex/issues/2).
+If you are interested in it, please let me know in [this issue](https://github.com/rusinikita/devex/issues/3).
 
 ## How to use
 
