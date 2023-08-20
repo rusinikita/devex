@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -96,5 +97,18 @@ func main() {
 		}
 	case "version":
 		println("v0.1")
+	case "check_style":
+		path := flag.Arg(2)
+
+		log.Printf("start parsing \n")
+
+		err := datacollector.CheckStyle(data, alias, path)
+		if err != nil {
+			log.Printf("parsing error %s \n", err)
+			os.Exit(1)
+		}
+
+		log.Printf("parsing success \n")
+		os.Exit(0)
 	}
 }
