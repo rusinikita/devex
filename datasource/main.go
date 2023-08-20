@@ -32,5 +32,6 @@ func DataEntities() []any {
 		project.Coverage{},
 		project.GitChange{},
 		project.GitCommit{},
+		project.LintError{},
 	}
 }
