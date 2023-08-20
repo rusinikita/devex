@@ -18,6 +18,8 @@ func TestName2(t *testing.T) {
 	assert.NotEmpty(t, result)
 }
 
+// todo failure test
+// Error:      	Should NOT be empty, but was []
 func TestTreemap(t *testing.T) {
 	v := values{
 		valueData{

@@ -22,7 +22,7 @@ func TestExtractXml(t *testing.T) {
 			},
 		},
 		{
-			Path: "src.black",
+			Path: "src/black",
 			Files: []Coverage{
 				{
 					File:           "__init__.py",
