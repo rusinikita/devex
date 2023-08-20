@@ -9,6 +9,10 @@ import (
 
 func createDB(file string) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(file), &gorm.Config{})
+	if res := db.Exec("PRAGMA foreign_keys = ON", nil); res.Error != nil {
+		panic(res.Error)
+	}
+
 	if err != nil {
 		panic(err)
 	}
