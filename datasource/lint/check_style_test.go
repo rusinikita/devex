@@ -42,7 +42,7 @@ func TestExtractCheckStyleXml(t *testing.T) {
 		},
 	}
 
-	result, err := extractCheckStyleXml(bytes.NewBufferString(testFile))
+	result, err := ExtractCheckStyleXml(bytes.NewBufferString(testFile))
 	assert.NoError(t, err)
 
 	assert.Equal(t, expect, result)
