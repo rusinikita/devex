@@ -11,7 +11,22 @@ import (
 )
 
 func TestExtractXml(t *testing.T) {
-	expect := []Package{
+	expect := getExpect()
+
+	c := make(chan Package, 5)
+
+	err := extractXML(bytes.NewBufferString(testFile), c)
+	assert.NoError(t, err)
+
+	var result []Package
+	for p := range c {
+		result = append(result, p)
+	}
+	assert.Equal(t, expect, result)
+}
+
+func getExpect() []Package {
+	return []Package{
 		{
 			Path: "src",
 			Files: []Coverage{
@@ -32,17 +47,6 @@ func TestExtractXml(t *testing.T) {
 			},
 		},
 	}
-
-	c := make(chan Package, 5)
-
-	err := extractXml(bytes.NewBufferString(testFile), c)
-	assert.NoError(t, err)
-
-	var result []Package
-	for p := range c {
-		result = append(result, p)
-	}
-	assert.Equal(t, expect, result)
 }
 
 func TestDebug(t *testing.T) {
@@ -53,7 +57,7 @@ func TestDebug(t *testing.T) {
 	wg, ctx := errgroup.WithContext(context.TODO())
 
 	wg.Go(func() error {
-		return ExtractXml(ctx, "/Users/nvrusin/black", c)
+		return ExtractXMLCommand(ctx, "/Users/nvrusin/black", c)
 	})
 
 	wg.Go(func() error {

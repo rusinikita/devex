@@ -1,30 +1,39 @@
 package dashboard
 
 import (
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
 
 	"github.com/go-echarts/go-echarts/v2/opts"
-	"github.com/lucasb-eyer/go-colorful"
 
 	"github.com/rusinikita/devex/slices"
 )
 
-type valueData struct {
+type ValueData struct {
+	Tags    map[string]uint32 `gorm:"serializer:json"`
 	Alias   string
 	Package string
 	Name    string
 	Author  string
 	Time    string
 	Value   float64
-	Tags    map[string]uint32 `gorm:"serializer:json"`
 }
 
-type values []valueData
+type Values []ValueData
 
-func (v values) withPackagesTrimmed(prefixes []string) values {
+func (v Values) Len() int           { return len(v) }
+func (v Values) Less(i, j int) bool { return v[i].Value > v[j].Value }
+func (v Values) Swap(i, j int) {
+	v[i], v[j] = v[j], v[i]
+}
+
+const countInnerSlice = 3
+const countResults = 20
+const countImports = 3
+const percent100 = 100
+
+func (v Values) WithPackagesTrimmed(prefixes []string) Values {
 	for i := range v {
 		v[i].Package = slices.MultiTrimPrefix(v[i].Package, prefixes)
 	}
@@ -32,13 +41,13 @@ func (v values) withPackagesTrimmed(prefixes []string) values {
 	return v
 }
 
-func (v values) barNames() []string {
-	return slices.Map(v, func(d valueData) string {
+func (v Values) BarNames() []string {
+	return slices.Map(v, func(d ValueData) string {
 		return filepath.Join(d.Alias, d.Package, d.Name)
 	})
 }
 
-func (v values) timeValues() (r []string) {
+func (v Values) TimeValues() (r []string) {
 	for _, d := range v {
 		r = append(r, d.Time)
 	}
@@ -49,16 +58,16 @@ func (v values) timeValues() (r []string) {
 	return r
 }
 
-func (v values) bar3dValues() (r [][3]any) {
-	return slices.Map(v, func(d valueData) [3]any {
+func (v Values) bar3dValues() (r [][countInnerSlice]any) {
+	return slices.Map(v, func(d ValueData) [countInnerSlice]any {
 		nameFormat := filepath.Join(d.Alias, d.Package, d.Name)
 
 		return [3]any{d.Time, nameFormat, d.Value}
 	})
 }
 
-func (v values) max() float64 {
-	return slices.Fold(v, func(item valueData, value float64) float64 {
+func (v Values) max() float64 {
+	return slices.Fold(v, func(item ValueData, value float64) float64 {
 		if item.Value > value {
 			return item.Value
 		}
@@ -67,41 +76,35 @@ func (v values) max() float64 {
 	})
 }
 
-func (v values) treeMaps() (result []opts.TreeMapNode) {
+func (v Values) simpleMap() (result []opts.TreeMapNode) {
 	root := newFile("", 0)
 
 	for _, data := range v {
-		p := append([]string{data.Alias}, strings.Split(data.Package, "/")...)
-
-		root.insert(p, data.Name, int(data.Value))
+		setChildrensToTM(data, root)
 	}
 
 	return root.treeNode().Children
 }
 
-func (v values) simpleMap() (result []opts.TreeMapNode) {
-	root := newFile("", 0)
-
-	for _, data := range v {
-		project, ok := root.children[data.Alias]
-		if !ok {
-			project = newFile(data.Alias, 0)
-			root.children[data.Alias] = project
-		}
-
-		folder, ok := project.children[data.Package]
-		if !ok {
-			folder = newFile(data.Package, 0)
-			project.children[data.Package] = folder
-		}
-
-		folder.children[data.Name] = newFile(data.Name, int(data.Value))
+func setChildrensToTM(data ValueData, root *file) {
+	project, ok := root.children[data.Alias]
+	if !ok {
+		project = newFile(data.Alias, 0)
+		root.children[data.Alias] = project
 	}
 
-	return root.treeNode().Children
+	folder, ok := project.children[data.Package]
+	if !ok {
+		folder = newFile(data.Package, 0)
+		project.children[data.Package] = folder
+	}
+
+	dashboardFile := newFile(data.Name, int(data.Value))
+
+	folder.children[data.Name] = dashboardFile
 }
 
-func (v values) tagsToValue(tagsFilter string) (result values) {
+func (v Values) TagsToValue(tagsFilter string) (result Values) {
 	tags := map[string]bool{}
 
 	for _, split := range strings.Split(tagsFilter, ";") {
@@ -110,8 +113,14 @@ func (v values) tagsToValue(tagsFilter string) (result values) {
 		}
 	}
 
-	for _, data := range v {
-		data := data
+	return getValues(v, tags)
+}
+
+func getValues(v Values, tags map[string]bool) Values {
+	result := Values{}
+
+	for _, value := range v {
+		data := value
 
 		for tag, count := range data.Tags {
 			if tags[tag] {
@@ -122,174 +131,15 @@ func (v values) tagsToValue(tagsFilter string) (result values) {
 		result = append(result, data)
 	}
 
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].Value > result[j].Value
-	})
+	return GetResult(result)
+}
 
-	if len(result) > 20 {
-		return result[:20]
+func GetResult(result Values) Values {
+	sort.Sort(result)
+
+	if len(result) > countResults {
+		return result[:countResults]
 	}
 
 	return result
-}
-
-type file struct {
-	name     string
-	children map[string]*file
-	value    int
-}
-
-func newFile(name string, value int) *file {
-	f := &file{
-		name:  name,
-		value: value,
-	}
-
-	if value == 0 {
-		f.children = map[string]*file{}
-	}
-
-	return f
-}
-
-func (f *file) insert(filePath []string, name string, value int) {
-	for _, folderName := range filePath {
-		folder, ok := f.children[folderName]
-		if !ok {
-			folder = newFile(folderName, 0)
-			f.children[folderName] = folder
-		}
-
-		f = folder
-	}
-
-	f.children[name] = &file{
-		name:  name,
-		value: value,
-	}
-}
-
-func (f file) treeNode() opts.TreeMapNode {
-	node := opts.TreeMapNode{
-		Name:     f.name,
-		Value:    f.value,
-		Children: nil,
-	}
-
-	for _, ff := range f.children {
-		if len(f.children) == 1 {
-			folder := node.Name
-			node = ff.treeNode()
-			node.Name = path.Join(folder, node.Name)
-			break
-		}
-
-		node.Children = append(node.Children, ff.treeNode())
-	}
-
-	return node
-}
-
-type importsData struct {
-	Alias   string
-	Package string
-	Name    string
-	Lines   uint32
-	Imports []string `gorm:"serializer:json"`
-}
-
-type allImports []importsData
-
-func (all allImports) withPackagesTrimmed(prefixes []string) allImports {
-	for i := range all {
-		all[i].Package = slices.MultiTrimPrefix(all[i].Package, prefixes)
-
-		for k := range all[i].Imports {
-			all[i].Imports[k] = slices.MultiTrimPrefix(all[i].Imports[k], prefixes)
-		}
-	}
-
-	return all
-}
-
-func (all allImports) tree() (categories []*opts.GraphCategory, nodes []opts.GraphNode, links []opts.GraphLink) {
-	projectTrees := map[string]*file{}
-
-	maxLines := 0
-
-	for _, data := range all {
-		project, ok := projectTrees[data.Alias]
-		if !ok {
-			project = newFile(data.Alias, 0)
-			projectTrees[data.Alias] = project
-		}
-
-		filePath := path.Join(data.Package, strings.TrimSuffix(data.Name, ".py"))
-		f, ok := project.children[filePath]
-		if !ok {
-			f = newFile(filePath, 0)
-			project.children[filePath] = f
-
-		}
-
-		moduleLines := f.value + int(data.Lines)
-		f.value = moduleLines
-		if moduleLines > maxLines {
-			maxLines = moduleLines
-		}
-
-		for _, imprt := range data.Imports {
-			if !strings.Contains(imprt, "/") {
-				imprt = strings.ReplaceAll(imprt, ".", "/")
-			}
-			if len(imprt) < 3 || imprt == "" {
-				continue
-			}
-
-			f.children[imprt] = nil
-		}
-	}
-
-	for alias, project := range projectTrees {
-		if alias == "push" {
-			alias = "_push_"
-		}
-
-		categories = append(categories, &opts.GraphCategory{
-			Name: alias,
-			Label: &opts.Label{
-				Show: true,
-			},
-		})
-
-		for fPath, f := range project.children {
-			node := opts.GraphNode{
-				Name:       path.Join(alias, fPath),
-				SymbolSize: float32(f.value) * 100 / float32(maxLines),
-				Value:      float32(f.value),
-				Category:   alias,
-				ItemStyle: &opts.ItemStyle{
-					Color: colorful.FastWarmColor().Hex(),
-				},
-			}
-
-			nodes = append(nodes, node)
-
-			for fileImport := range f.children {
-				_, hasImport := project.children[fileImport]
-				if !hasImport {
-					continue
-				}
-
-				link := opts.GraphLink{
-					Source: node.Name,
-					Target: path.Join(alias, fileImport),
-				}
-
-				links = append(links, link)
-			}
-		}
-	}
-
-	return categories, nodes, links
 }

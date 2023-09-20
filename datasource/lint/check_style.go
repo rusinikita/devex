@@ -15,15 +15,15 @@ type LinterFile struct {
 	Errors []LinterError `xml:"error"`
 }
 type LinterError struct {
-	Column   uint   `xml:"column,attr"`
-	Line     uint   `xml:"line,attr"`
 	Message  string `xml:"message,attr"`
 	Severity string `xml:"severity,attr"`
 	Source   string `xml:"source,attr"`
+	Line     uint   `xml:"line,attr"`
+	Column   uint   `xml:"column,attr"`
 }
 
-// ExtractCheckStyleXml парсим xml
-func ExtractCheckStyleXml(file io.Reader) ([]LinterFile, error) {
+// ExtractCheckStyleXML parsing xml
+func ExtractCheckStyleXML(file io.Reader) ([]LinterFile, error) {
 	var data xmlFile
 
 	err := xml.NewDecoder(file).Decode(&data)

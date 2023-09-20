@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+const two = 2
+
 func Map[T, V any](list []T, f func(in T) V) (result []V) {
 	for _, t := range list {
 		result = append(result, f(t))
@@ -29,7 +31,7 @@ func Distinct[T comparable](a []T) []T {
 }
 
 func Revert[T any](slice []T) {
-	for i := 0; i < len(slice)/2; i++ {
+	for i := 0; i < len(slice)/two; i++ {
 		slice[i], slice[len(slice)-i-1] = slice[len(slice)-i-1], slice[i]
 	}
 }
@@ -54,42 +56,42 @@ func ToSet[T comparable](list []T) map[T]bool {
 	return m
 }
 
-func Index[T any, K comparable](list []T, key func(T) K) map[K]T {
-	m := map[K]T{}
+func SQLFilter(column, s string) string {
+	parts := strings.Split(s, ";")
 
-	for _, t := range list {
-		m[key(t)] = t
-	}
-
-	return m
+	return strings.Join(
+		Map(parts, addFilter(column)),
+		" and ",
+	)
 }
 
-func SQLFilter(column, s string) string {
-	return strings.Join(
-		Map(strings.Split(s, ";"),
-			func(mainPart string) string {
-				parts := strings.Split(mainPart, ",")
+func addFilter(column string) func(mainPart string) string {
+	return func(mainPart string) string {
+		parts := getPartsByMainPart(column, mainPart)
 
-				parts = Map(parts, func(smallPart string) string {
-					sql := column
+		sql := strings.Join(parts, " or ")
 
-					if strings.HasPrefix(smallPart, "!") {
-						smallPart = strings.TrimPrefix(smallPart, "!")
-						sql += " not"
-					}
+		if len(parts) <= 1 {
+			return sql
+		}
 
-					return sql + " like '%" + smallPart + "%'"
-				})
+		return fmt.Sprintf("(%s)", sql)
+	}
+}
 
-				sql := strings.Join(parts, " or ")
+func getPartsByMainPart(column string, part string) []string {
+	parts := strings.Split(part, ",")
 
-				if len(parts) <= 1 {
-					return sql
-				}
+	return Map(parts, func(smallPart string) string {
+		sql := column
 
-				return fmt.Sprintf("(%s)", sql)
-			},
-		), " and ")
+		if strings.HasPrefix(smallPart, "!") {
+			smallPart = strings.TrimPrefix(smallPart, "!")
+			sql += " not"
+		}
+
+		return sql + " like '%" + smallPart + "%'"
+	})
 }
 
 func MultiTrimPrefix(s string, pp []string) (r string) {

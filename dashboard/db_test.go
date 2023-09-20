@@ -1,7 +1,7 @@
 package dashboard
 
 import (
-	"fmt"
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,11 +10,11 @@ import (
 	"github.com/rusinikita/devex/project"
 )
 
-func Test_fileSizes(t *testing.T) {
+func Test_FileSizes(t *testing.T) {
 	database := db.TestDB("../devex.db")
 
-	gotResult, err := fileSizes(database, []project.ID{1}, "and (name like '%.go' or name like '%.md')")
+	gotResult, err := FileSizes(database, []project.ID{1}, "and (name like '%.go' or name like '%.md')")
 	require.NoError(t, err)
 
-	fmt.Println(gotResult.barNames())
+	log.Println(gotResult.BarNames())
 }
