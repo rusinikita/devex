@@ -1,114 +1,69 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"log"
 	"os"
-	"strings"
-	"time"
 
-	"github.com/rusinikita/devex/dashboard"
+	"github.com/rusinikita/devex/cmd/dashboard"
+	"github.com/rusinikita/devex/cmd/project"
 	"github.com/rusinikita/devex/datacollector"
-	"github.com/rusinikita/devex/datasource"
-	"github.com/rusinikita/devex/datasource/files"
-	"github.com/rusinikita/devex/db"
-	"github.com/rusinikita/devex/project"
+	"github.com/rusinikita/devex/internal/constants"
 )
 
 var tags = flag.String("tags", "", "file content tags")
 var lang = flag.String("lang", "go", "main project language")
 
 func main() {
+	commandName, alias := getFlags()
+
+	errStruct := execute(commandName, alias)
+
+	if errStruct.Error != nil {
+		log.Printf(errStruct.Template, errStruct.Error)
+		os.Exit(constants.ERROR)
+	}
+
+	log.Printf("parsing success \n")
+	os.Exit(constants.SUCCESS)
+}
+
+func execute(name string, alias string) datacollector.ErrStruct {
+	errStruct := datacollector.ErrStruct{}
+
+	switch name {
+	case "new":
+		path := flag.Arg(constants.THIRD)
+		errStruct = project.New(alias, path, lang, tags)
+	case "server":
+		errStruct = dashboard.RunServer()
+	case "version":
+		project.Version()
+	case "check_style":
+		path := flag.Arg(constants.THIRD)
+		errStruct = project.CheckStyle(alias, path)
+	case "update":
+	default:
+		errStruct = project.NotImplemented()
+	}
+
+	return errStruct
+}
+
+func getFlags() (commandName string, alias string) {
 	flag.Parse()
 
-	command := flag.Arg(0)
-	alias := flag.Arg(1)
+	commandName = getCommand()
+	alias = flag.Arg(constants.SECOND)
 
-	data := db.DB()
+	return commandName, alias
+}
 
+func getCommand() string {
+	command := flag.Arg(constants.FIRST)
 	if command == "" {
 		log.Println("no command => running server")
 		command = "new"
 	}
-
-	switch command {
-	case "new":
-		path := flag.Arg(2)
-
-		p := project.Project{
-			Alias:      alias,
-			Language:   *lang,
-			FolderPath: path,
-			CreatedAt:  time.Now(),
-		}
-
-		log.Println("Creating project in", path)
-
-		projectResult := data.FirstOrCreate(&p, p)
-		err := projectResult.Error
-		if err != nil {
-			log.Fatal("db error", err)
-		}
-
-		if projectResult.RowsAffected == 0 {
-			log.Fatal(alias, " already exists, please use 'update' command")
-		}
-
-		if len(*tags) > 0 {
-			files.Tags = append(files.Tags, strings.Split(*tags, ",")...)
-		}
-
-		err = datacollector.Collect(context.TODO(), data, p, datasource.NewExtractors())
-		if err != nil {
-			log.Fatal("collect error ", err)
-		}
-
-	case "update":
-		log.Fatal("not implemented, please remove devex_db")
-
-		// p := project.Project{Alias: alias}
-
-		// err := data.Take(&p).Error
-		// if err != nil {
-		// 	log.Fatal("db error", err)
-		// }
-		//
-		// err = data.Delete(p, p).Error
-		// if err != nil {
-		// 	log.Fatal("db error", err)
-		// }
-		//
-		// p.ID = 0
-		// err = data.Create(&p).Error
-		// if err != nil {
-		// 	log.Fatal("db error", err)
-		// }
-
-		// err = datacollector.Collect(context.TODO(), data, p, datasource.NewExtractors())
-		// if err != nil {
-		// 	log.Fatal("collect error", err)
-		// }
-
-	case "server":
-		err := dashboard.RunServer(data)
-		if err != nil {
-			log.Fatal("server", err)
-		}
-	case "version":
-		println("v0.1")
-	case "check_style":
-		path := flag.Arg(2)
-
-		log.Printf("start parsing \n")
-
-		err := datacollector.CheckStyle(data, alias, path)
-		if err != nil {
-			log.Printf("parsing error %s \n", err)
-			os.Exit(1)
-		}
-
-		log.Printf("parsing success \n")
-		os.Exit(0)
-	}
+	return command
 }

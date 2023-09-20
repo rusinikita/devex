@@ -5,20 +5,31 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/rusinikita/devex/dao"
 	"github.com/rusinikita/devex/project"
 )
 
-func gitChangesTop(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (result values, err error) {
+const name = ", name"
+
+func GitChangesTop(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (result Values, err error) {
 	grouping := "alias, package"
-	barFilter := "alias || '/' || package"
+	filter := filesFilter
 
 	if filesMode {
-		grouping += ", name"
-		filesFilter = "and f.present > 0\n" + filesFilter
-		barFilter += " || '/' || name"
+		grouping += name
+		filter = "and f.present > 0\n" + filter
 	}
 
-	sqlBars := `
+	sqlBars := getSQLBars()
+	sqlBars = fmt.Sprintf(sqlBars, grouping, filter)
+
+	err = db.Raw(sqlBars, projects).Scan(&result).Error
+
+	return result, err
+}
+
+func getSQLBars() string {
+	return `
 	with fcm as (select %[1]s, date("time", 'start of month') as month, sum(rows_added + rows_removed) as line_changes
 		from git_changes as ch
 		join files f on ch.file = f.id
@@ -33,27 +44,31 @@ func gitChangesTop(db *gorm.DB, filesMode bool, projects []project.ID, filesFilt
 	order by avg(line_changes) desc
 	limit 100
 `
-	sqlBars = fmt.Sprintf(sqlBars, grouping, filesFilter)
-
-	err = db.Raw(sqlBars, projects).Scan(&result).Error
-
-	return result, err
 }
 
-func gitChangesData(db *gorm.DB, filesMode bool, projects []project.ID, bars values) (result values, err error) {
+func GitChangesData(db *gorm.DB, filesMode bool, projects []project.ID, bars Values) (result Values, err error) {
 	// Future: months/weeks selector
 
-	barStrings := bars.barNames()
+	barStrings := bars.BarNames()
 
 	grouping := "alias, package"
 	barFilter := "alias || '/' || package"
 
 	if filesMode {
-		grouping += ", name"
+		grouping += name
 		barFilter += " || '/' || name"
 	}
 
-	sql := `
+	sql := getSQLChangesData()
+	sql = fmt.Sprintf(sql, grouping, barFilter)
+
+	err = db.Raw(sql, projects, barStrings).Scan(&result).Error
+
+	return result, err
+}
+
+func getSQLChangesData() string {
+	return `
 	select %[1]s, date("time", 'start of month') as 'time', sum(rows_added + rows_removed) as value
 	from git_changes as ch
 	join files f on ch.file = f.id
@@ -63,15 +78,10 @@ func gitChangesData(db *gorm.DB, filesMode bool, projects []project.ID, bars val
 		and time > date('now', '-24 month')
 	group by %[1]s, date("time", 'start of month')
 `
-	sql = fmt.Sprintf(sql, grouping, barFilter)
-
-	err = db.Raw(sql, projects, barStrings).Scan(&result).Error
-
-	return result, err
 }
 
-func fileSizes(db *gorm.DB, projects []project.ID, filesFilter string) (result values, err error) {
-	err = db.Model(project.File{}).
+func FileSizes(db *gorm.DB, projects []project.ID, filesFilter string) (result Values, err error) {
+	err = db.Model(dao.File{}).
 		Select("alias", "package", "name", "lines as value").
 		Joins("join projects p on p.id = files.project").
 		Where("present > 0 and project in ?"+filesFilter, projects).
@@ -81,13 +91,13 @@ func fileSizes(db *gorm.DB, projects []project.ID, filesFilter string) (result v
 	return result, err
 }
 
-func contribution(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (result values, err error) {
+func Contribution(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (result Values, err error) {
 	grouping := "package"
 	if filesMode {
-		grouping += ", name"
+		grouping += name
 	}
 
-	err = db.Model(project.GitChange{}).
+	err = db.Model(dao.GitChange{}).
 		Select("alias", grouping, "author", "sum(rows_added+rows_removed) as value").
 		Joins("join git_commits c on c.id = git_changes.'commit'").
 		Joins("join files f on f.id = git_changes.file").
@@ -101,20 +111,19 @@ func contribution(db *gorm.DB, filesMode bool, projects []project.ID, filesFilte
 	return result, err
 }
 
-// TODO contribution pace. velocity per month
-
-func commitMessages(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter, commitsFilter string) (result values, err error) {
+// CommitMessages TODO contribution pace. velocity per month
+func CommitMessages(db *gorm.DB, filesMode bool, projects []project.ID, filter string) (result Values, err error) {
 	grouping := "package"
 	if filesMode {
-		grouping += ", name"
+		grouping += name
 	}
 
-	err = db.Model(project.GitChange{}).
+	err = db.Model(dao.GitChange{}).
 		Select("alias", grouping, "count(*) as value").
 		Joins("join git_commits c on c.id = git_changes.'commit'").
 		Joins("join files f on f.id = git_changes.file").
 		Joins("join projects p on p.id = f.project").
-		Where("git_changes.time > date('now', '-24 month') and f.present > 0 and f.project in ?"+filesFilter+commitsFilter, projects).
+		Where("git_changes.time > date('now', '-24 month') and f.present > 0 and f.project in ?"+filter, projects).
 		Group("alias, " + grouping).
 		Having("count(*) > 0").
 		Order("count(*) desc").
@@ -125,8 +134,8 @@ func commitMessages(db *gorm.DB, filesMode bool, projects []project.ID, filesFil
 	return result, err
 }
 
-func fileTags(db *gorm.DB, projects []project.ID, filesFilter, tagsFilter string) (result values, err error) {
-	err = db.Model(project.File{}).
+func FileTags(db *gorm.DB, projects []project.ID, filesFilter, tagsFilter string) (result Values, err error) {
+	err = db.Model(dao.File{}).
 		Select("alias", "package", "name", "tags").
 		Joins("join projects p on p.id = files.project").
 		Where("present > 0 and project in ?"+filesFilter+tagsFilter, projects).
@@ -135,13 +144,13 @@ func fileTags(db *gorm.DB, projects []project.ID, filesFilter, tagsFilter string
 	return result, err
 }
 
-func imports(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (result allImports, err error) {
+func Imports(db *gorm.DB, filesMode bool, projects []project.ID, filesFilter string) (result AllImports, err error) {
 	grouping := "package"
 	if filesMode {
-		grouping += ", name"
+		grouping += name
 	}
 
-	err = db.Model(project.File{}).
+	err = db.Model(dao.File{}).
 		Select("alias", grouping, "lines", "imports").
 		Joins("join projects p on p.id = files.project").
 		Find(&result, "present > 0 and project in ?"+filesFilter, projects).

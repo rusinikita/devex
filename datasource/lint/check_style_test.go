@@ -2,8 +2,16 @@ package lint
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+const (
+	one  = 1
+	two  = 2
+	four = 4
+	nine = 9
 )
 
 func TestExtractCheckStyleXml(t *testing.T) {
@@ -12,16 +20,15 @@ func TestExtractCheckStyleXml(t *testing.T) {
 			Path: "slices/slices_test.go",
 			Errors: []LinterError{
 				{
-					Column:   1,
-					Line:     9,
+					Column:   one,
+					Line:     nine,
 					Message:  "Function TestSQLFilter missing the call to method parallel\n",
 					Severity: "error",
 					Source:   "paralleltest",
 				},
 				{
-
-					Column:   9,
-					Line:     1,
+					Column:   nine,
+					Line:     one,
 					Message:  "package should be 'slices_test' instead of 'slices'",
 					Severity: "error",
 					Source:   "testpackage",
@@ -32,8 +39,8 @@ func TestExtractCheckStyleXml(t *testing.T) {
 			Path: "db/create.go",
 			Errors: []LinterError{
 				{
-					Column:   2,
-					Line:     4,
+					Column:   two,
+					Line:     four,
 					Message:  "import 'github.com/glebarez/sqlite' is not allowed from list 'Main'",
 					Severity: "error",
 					Source:   "depguard",
@@ -42,7 +49,7 @@ func TestExtractCheckStyleXml(t *testing.T) {
 		},
 	}
 
-	result, err := ExtractCheckStyleXml(bytes.NewBufferString(testFile))
+	result, err := ExtractCheckStyleXML(bytes.NewBufferString(testFile))
 	assert.NoError(t, err)
 
 	assert.Equal(t, expect, result)
