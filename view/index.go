@@ -4,10 +4,11 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"gorm.io/gorm"
 	"html/template"
 	"net/http"
 	"strings"
+
+	"gorm.io/gorm"
 
 	"github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/templates"
@@ -46,6 +47,9 @@ func RenderPage(db *gorm.DB, params Params, w http.ResponseWriter) error {
 		return err
 	}
 
+	revert := applyTemplateHack(newFormStruct(requestDto.Projects, params))
+	defer revert()
+
 	// response
 	return page.Render(w)
 }
@@ -55,7 +59,6 @@ func getPage(db *gorm.DB, params Params, dto requestDtoStruct) (*components.Page
 	packagePrefs := dto.Prefs
 	dataProjects := dto.DataProjects
 	sqlFilter := dto.SQLFilter
-	projects := dto.Projects
 
 	// start block first
 	// Code changes per month; Top changes speed; file size chart
@@ -101,42 +104,22 @@ func getPage(db *gorm.DB, params Params, dto requestDtoStruct) (*components.Page
 	page.AddCustomizedCSSAssets("https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css")
 	// end block third
 
-	// template hack
-	originTpl := templates.PageTpl
-	defer func() { templates.PageTpl = originTpl }()
+	return page, nil
+}
 
+func applyTemplateHack(formData formStruct) (revert func()) {
 	var tpl bytes.Buffer
-	formData := struct {
-		SelectedProjects slices.Set[project.ID]
-		PackageFilter    string
-		NameFilter       string
-		TrimPackage      string
-		CommitFilters    string
-		FileFilters      string
-		Projects         []dao.Project
-		PerFiles         bool
-		PerFilesImports  bool
-	}{
-		Projects:         projects,
-		SelectedProjects: slices.ToSet(params.ProjectIDs),
-		PerFiles:         params.PerFiles,
-		PerFilesImports:  params.PerFilesImports,
-		PackageFilter:    params.PackageFilter,
-		NameFilter:       params.NameFilter,
-		TrimPackage:      params.TrimPackage,
-		CommitFilters:    params.CommitFilters,
-		FileFilters:      params.FileFilters,
+	err := template.Must(template.New("new").Parse(form)).Execute(&tpl, formData)
+	if err != nil {
+		panic(err)
 	}
 
-	err = template.Must(template.New("new").Parse(form)).Execute(&tpl, formData)
-	if err != nil {
-		return page, err
-	}
+	originTpl := templates.PageTpl
 
 	templates.PageTpl = strings.ReplaceAll(templates.PageTpl, "<body>", "<body class=\"container\">\n"+tpl.String())
 	templates.PageTpl = strings.ReplaceAll(templates.PageTpl, "<html>", "<html data-theme=\"light\">")
 
-	return page, nil
+	return func() { templates.PageTpl = originTpl }
 }
 
 func addCommitsToPage( //nolint
